@@ -6,7 +6,7 @@
  * GPL license
  */
 
-pmrpc = window.pmrpc = (function(){
+pmrpc = window.pmrpc = function(){
   // check if JSON library is available
   if (typeof JSON == "undefined" || typeof JSON.stringify == "undefined" || 
       typeof JSON.parse == "undefined") {
@@ -16,28 +16,28 @@ pmrpc = window.pmrpc = (function(){
   // JSON encode an object into pmrpc message
   function encode(obj){
     return "pmrpc." + JSON.stringify(obj);
-  };
+  }
 
   // JSON decode a pmrpc message
-  function GIFPC_decode(str){
+  function decode(str){
     return JSON.parse(str.substring("pmrpc.".length));
-  };
+  }
   
   // Converts a wildcard expression into a regular expression
   function convertWildcardToRegex(wildcardExpression) {
     var regex = wildcardExpression.replace(/([\^\$\.\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g,"\\$1");
     regex = "^" + regex.replace("*", ".*") + "$";
     return regex;
-  };
+  }
 
   // Checks whether a domain satisfies the access control list. 
   // The access control list has a whitelist and a blacklist. In order to satisfy the acl, 
   // the domain must be on the whitelist, and must not be on the blacklist.
-  function checkACL() {accessControlList, origin) {
+  function checkACL(accessControlList, origin) {
     var aclWhitelist = accessControlList.whitelist;
     var aclBlacklist = accessControlList.blacklist;
       
-    var isWhitelisted = false,
+    var isWhitelisted = false;
     var isBlacklisted = false;
     
     for (var i=0; i<aclWhitelist.length; ++i) {
@@ -48,8 +48,8 @@ pmrpc = window.pmrpc = (function(){
       }
     }
      
-    for (var i=0; i<aclBlacklist.length; ++i) {
-      var aclRegex = convertWildcardToRegex(aclBlacklist[i]);
+    for (var j=0; i<aclBlacklist.length; ++j) {
+      var aclRegex = convertWildcardToRegex(aclBlacklist[j]);
       if(origin.match(aclRegex)) {
         isBlacklisted = true;
         break;
@@ -57,7 +57,7 @@ pmrpc = window.pmrpc = (function(){
     }
     
     return isWhitelisted && !isBlacklisted;
-  };
+  }
   
   // dictionary of services registered for remote calls
   var registeredServices = {};
@@ -72,17 +72,17 @@ pmrpc = window.pmrpc = (function(){
     registeredServices[name] = {
       "method" : method, 
       "acl" : typeof acl != "undefined" ? acl : {whitelist: ["*"], blacklist: []}};
-  };
+  }
 
   // unregister a previously registered procedure
   function unregister(name) {
     delete registeredServices[name];
-  };
+  }
   
   // receive and execute a RPC call
   function dispatch(serviceCallEvent) {    
     // if the message is not for pmrpc, ignore it.
-    if (serviceCallEvent.indexOf("pmrpc.") != 0) {
+    if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
       return;
     }
     
@@ -94,11 +94,11 @@ pmrpc = window.pmrpc = (function(){
     
     // create a status object for sending reports to the sender
     var statusObj = {};
-    statusObj.callId = callId
+    statusObj.callId = callId;
   
     // check if service with specified name is registered
-    if (typeof service != "undefined") {      
-      if (typeof callId == "undefined") {
+    if (typeof service !== "undefined") {      
+      if (typeof callId === "undefined") {
         // if there is no callId, then this is an internal call so just invoke the method
         service.method.apply(null, parameters);
       } else {
@@ -110,8 +110,8 @@ pmrpc = window.pmrpc = (function(){
             requestsBeingProcessed[callId] = 1;
             statusObj.status = "processing";
             call( {
-              "destinationWindow" : serviceCallEvent.source,
-              "method" : receivePmrpcStatusUpdate,
+              "destination" : serviceCallEvent.source,
+              "method" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
               "retries" : -1 } );
             
@@ -127,8 +127,8 @@ pmrpc = window.pmrpc = (function(){
             // delete internal flag for this callId, and return results to sender
             delete requestsBeingProcessed[callId];
             call( {
-              "destinationWindow" : serviceCallEvent.source,
-              "method" : receivePmrpcStatusUpdate,
+              "destination" : serviceCallEvent.source,
+              "method" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
               "retries" : -1 } );
             
@@ -137,8 +137,8 @@ pmrpc = window.pmrpc = (function(){
             statusObj.status = "error";
             statusObj.description = "request not authorized";
             call( {
-              "destinationWindow" : serviceCallEvent.source,
-              "method" : receivePmrpcStatusUpdate,
+              "destination" : serviceCallEvent.source,
+              "method" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
               "retries" : -1 } );
           }
@@ -152,15 +152,15 @@ pmrpc = window.pmrpc = (function(){
       statusObj.status = "error";
       statusObj.description = "service not registered";
       call( {
-        "destinationWindow" : serviceCallEvent.source,
-        "method" : receivePmrpcStatusUpdate,
+        "destination" : serviceCallEvent.source,
+        "method" : "receivePmrpcStatusUpdate",
         "params" : [statusObj],
         "retries" : -1 } );
     }
   }
   
   // call remote method, with configuration:
-  //   destinationWindow - window on which the method is registered
+  //   destination - window on which the method is registered
   //   method - name under which the method is registered
   //   params - array of parameters fir the method call
   //   onSuccess - method which will be called if the rpc call was successful
@@ -170,12 +170,12 @@ pmrpc = window.pmrpc = (function(){
   //   destinationDoman - domain of the destination that should process the call
   function call(config) {
     var callObj = {
-      destinationWindow : config.destinationWindow,
+      destination : config.destination,
       method : config.method,
       params : typeof config.params != "undefined" ? config.params : [],
       onSuccess : typeof config.onSuccess != "undefined" ? config.onSuccess : function (){},
-      onError : typeof config.onError != "undefined" ? config.onSuccess : function (){},
-      retries : typeof config.retries != "undefined" ? config.retries : 15,
+      onError : typeof config.onError != "undefined" ? config.onError : function (){},
+      retries : typeof config.retries != "undefined" ? config.retries : 5,
       timeout : typeof config.timeout != "undefined" ? config.timeout : 1000,
       destinationDomain : typeof config.destinationDomain != "undefined" ? config.destinationDomain : "*",
       callId : Math.random() + "" + Math.random(),
@@ -184,15 +184,15 @@ pmrpc = window.pmrpc = (function(){
     
     if (config.retries == -1) {
       // if retries is -1, this is an internal status call
-      callObj.destinationWindow.postMessage(
+      callObj.destination.postMessage(
         encode({"method" : callObj.method, "params" : callObj.params}), 
         callObj.destinationDomain);
     } else {
       // otherwise, its a normal call. create an entry and start the wait-for-response protocol
-      callQueue[callId] = callObj;
-      waitForResponse(callId);
+      callQueue[callObj.callId] = callObj;
+      waitForResponse(callObj.callId);
     }
-  };
+  }
   
   // periodically send requests, until all retries are exhausted
   function waitForResponse(callId) {
@@ -206,7 +206,7 @@ pmrpc = window.pmrpc = (function(){
       if (callObj.retries <= -1) {
         delete callQueue[callId];
         callObj.onError( { 
-          "destinationWindow" : callObj.destinationWindow,
+          "destination" : callObj.destination,
           "method" : callObj.method,
           "params" : callObj.params,
           "status" : "error",
@@ -215,11 +215,12 @@ pmrpc = window.pmrpc = (function(){
         // if more retries are lest, send new request with same callId
         callObj.status = "requestSent";
         callObj.retries = callObj.retries - 1;
-        callObj.destinationWindow.postMessage(
+        callObj.destination.postMessage(
           encode({"method" : callObj.method, "params" : callObj.params, "callId" : callObj.callId}),
           callObj.destinationDomain);
         callQueue[callId] = callObj;
-        window.setTimeout(function() { waitForResponse(callId); }, callObject.timeout);
+        window.setTimeout(function() { waitForResponse(callId); }, callObj.timeout);
+      }
     }
   }
   
@@ -235,11 +236,11 @@ pmrpc = window.pmrpc = (function(){
     } else if(statusObj.status == "processing") {
       // if the destination started processing the request, set the status and let waitForResponse handle the rest
       callObj.status = "processing";
-    } else if(status == "success") {
+    } else if(statusObj.status == "success") {
       // if this is the response, call the onSuccess handler
       delete callQueue[callId];
       callObj.onSuccess( { 
-        "destinationWindow" : callObj.destinationWindow,
+        "destination" : callObj.destination,
         "method" : callObj.method,
         "params" : callObj.params,
         "status" : "success",
@@ -265,4 +266,4 @@ pmrpc = window.pmrpc = (function(){
     unregister : unregister,
     call : call
   };
-})();
+}();

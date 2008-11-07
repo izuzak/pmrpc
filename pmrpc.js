@@ -8,8 +8,8 @@
 
 pmrpc = window.pmrpc = function(){
   // check if JSON library is available
-  if (typeof JSON == "undefined" || typeof JSON.stringify == "undefined" || 
-      typeof JSON.parse == "undefined") {
+  if (typeof JSON === "undefined" || typeof JSON.stringify === "undefined" || 
+      typeof JSON.parse === "undefined") {
     throw new Exception("pmrpc requires the JSON library");
   }
    
@@ -71,7 +71,7 @@ pmrpc = window.pmrpc = function(){
   function register(name, method, acl) {
     registeredServices[name] = {
       "method" : method, 
-      "acl" : typeof acl != "undefined" ? acl : {whitelist: ["*"], blacklist: []}};
+      "acl" : typeof acl !== "undefined" ? acl : {whitelist: ["*"], blacklist: []}};
   }
 
   // unregister a previously registered procedure
@@ -103,13 +103,13 @@ pmrpc = window.pmrpc = function(){
         service.method.apply(null, parameters);
       } else {
         // if there is a callId, check if the request is already being processed
-        if (typeof requestsBeingProcessed[callId] == "undefined") {
+        if (typeof requestsBeingProcessed[callId] === "undefined") {
           // check the acl rights
-          if (checkACL(service.acl, serviceCallEvent.origin)) {    
+          if (checkACL(service.acl, serviceCallEvent.origin)) {  
             // if the request is authorized, set internal flag for this callId, and send status update to sender
             requestsBeingProcessed[callId] = 1;
             statusObj.status = "processing";
-            call( {
+            callInternal( {
               "destination" : serviceCallEvent.source,
               "method" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
@@ -126,7 +126,7 @@ pmrpc = window.pmrpc = function(){
             
             // delete internal flag for this callId, and return results to sender
             delete requestsBeingProcessed[callId];
-            call( {
+            callInternal( {
               "destination" : serviceCallEvent.source,
               "method" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
@@ -136,7 +136,7 @@ pmrpc = window.pmrpc = function(){
             // if the call is not authorized, return error
             statusObj.status = "error";
             statusObj.description = "request not authorized";
-            call( {
+            callInternal( {
               "destination" : serviceCallEvent.source,
               "method" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
@@ -151,7 +151,7 @@ pmrpc = window.pmrpc = function(){
       // if service with specified name is not registered, return error
       statusObj.status = "error";
       statusObj.description = "service not registered";
-      call( {
+      callInternal( {
         "destination" : serviceCallEvent.source,
         "method" : "receivePmrpcStatusUpdate",
         "params" : [statusObj],
@@ -159,6 +159,15 @@ pmrpc = window.pmrpc = function(){
     }
   }
   
+  // public call method
+  function call(config) {
+    // check that number of retries is not -1, that is a special internal value
+    if (config.retries && config.retries === -1) {
+      throw new Exception("number of retries must be 0 or higher");
+    } 
+    callInternal(config);
+  }
+
   // call remote method, with configuration:
   //   destination - window on which the method is registered
   //   method - name under which the method is registered
@@ -168,21 +177,21 @@ pmrpc = window.pmrpc = function(){
   //   retries - number of retries pmrpc will attpempt if previous calls were not successful
   //   timeout - number of miliseconds pmrpc will wait for any kind of answer before givnig up or retrying
   //   destinationDoman - domain of the destination that should process the call
-  function call(config) {
+  function callInternal(config) {
     var callObj = {
       destination : config.destination,
       method : config.method,
-      params : typeof config.params != "undefined" ? config.params : [],
-      onSuccess : typeof config.onSuccess != "undefined" ? config.onSuccess : function (){},
-      onError : typeof config.onError != "undefined" ? config.onError : function (){},
-      retries : typeof config.retries != "undefined" ? config.retries : 5,
-      timeout : typeof config.timeout != "undefined" ? config.timeout : 1000,
-      destinationDomain : typeof config.destinationDomain != "undefined" ? config.destinationDomain : "*",
+      params : typeof config.params !== "undefined" ? config.params : [],
+      onSuccess : typeof config.onSuccess !== "undefined" ? config.onSuccess : function (){},
+      onError : typeof config.onError !== "undefined" ? config.onError : function (){},
+      retries : typeof config.retries !== "undefined" ? config.retries : 5,
+      timeout : typeof config.timeout !== "undefined" ? config.timeout : 1000,
+      destinationDomain : typeof config.destinationDomain !== "undefined" ? config.destinationDomain : "*",
       callId : Math.random() + "" + Math.random(),
       status : "requestNotSent"
     };
     
-    if (config.retries == -1) {
+    if (config.retries === -1) {
       // if retries is -1, this is an internal status call
       callObj.destination.postMessage(
         encode({"method" : callObj.method, "params" : callObj.params}), 
@@ -199,7 +208,7 @@ pmrpc = window.pmrpc = function(){
     var callObj = callQueue[callId];
     
     // if the call was processed or is being processed, stop sending requests
-    if (typeof callObj == "undefined" || callObj.status == "processing") {
+    if (typeof callObj === "undefined" || callObj.status === "processing") {
       return;
     } else {
       // if the retried the maximum number of times, give up and report an error
@@ -210,7 +219,7 @@ pmrpc = window.pmrpc = function(){
           "method" : callObj.method,
           "params" : callObj.params,
           "status" : "error",
-          "description" : callObj.status == "requestSent" ? "destination not responding" : callObj.description} );
+          "description" : callObj.status === "requestSent" ? "destination not responding" : callObj.description} );
       } else {
         // if more retries are lest, send new request with same callId
         callObj.status = "requestSent";
@@ -229,14 +238,14 @@ pmrpc = window.pmrpc = function(){
     var callId = statusObj.callId;
     var callObj = callQueue[callId];
 
-    if (statusObj.status == "error") {
+    if (statusObj.status === "error") {
       // if an error happened, set the status and description and let waitForResponse handle the rest
       callObj.status = "error";
       callObj.description = statusObj.description;
-    } else if(statusObj.status == "processing") {
+    } else if(statusObj.status === "processing") {
       // if the destination started processing the request, set the status and let waitForResponse handle the rest
       callObj.status = "processing";
-    } else if(statusObj.status == "success") {
+    } else if(statusObj.status === "success") {
       // if this is the response, call the onSuccess handler
       delete callQueue[callId];
       callObj.onSuccess( { 

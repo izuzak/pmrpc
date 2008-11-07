@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <script src="json2.js" type="text/javascript"></script>
+  <script src="pmrpc.js" type="text/javascript"></script>
+
+  <script type="text/javascript">
+  
+  
+  function startIframe() {
+    // test1
+    pmrpc.register("test1", function() {});
+    
+    // test2
+    pmrpc.register("test2", function(echo) {return echo;});
+    
+    // test3
+    pmrpc.register("test3", function() {});
+    
+    // test4
+    pmrpc.register("test4_unregistered", function() {});
+    
+    // test6
+    pmrpc.register("test6", function() {});
+    
+    // test7
+    pmrpc.register("test7", function() {});
+    
+    // test8
+    pmrpc.register("test8", function() {}, {whitelist: ["http://pmrpc.googlecode.com/svn/trunk/*","file://*"], blacklist:[]});
+    
+    // test9
+    pmrpc.register("test9", function() {}, {whitelist: ["http://pmrpc.googlecode.com/*", "file://*"], blacklist:["http://pmrpc.googlecode.com/svn/trunk/*", "file*"]});
+    
+    // test10
+    pmrpc.register("test10", function() {}, {whitelist: ["http://www.fail.com*"], blacklist:[]});
+  }
+  
+  </script>  
+</head>
+<body onload="startIframe();"></body>
+</html>

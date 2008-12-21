@@ -238,6 +238,10 @@ pmrpc = window.pmrpc = function(){
   function receivePmrpcStatusUpdate(statusObj) {
     var callId = statusObj.callId;
     var callObj = callQueue[callId];
+    
+    if (!callObj) {
+      return;
+    }
 
     if (statusObj.status === "error") {
       // if an error happened, set the status and description and let waitForResponse handle the rest

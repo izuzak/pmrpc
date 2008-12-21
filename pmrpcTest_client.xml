@@ -25,6 +25,8 @@
       function startTests() {
         // test1 - default, no return value
         tests["test1"] = {testDescrition : "normal call"};
+        alert(window.parent.frames.gadget2);
+        alert(window.parent.frames.gadget2.postMessage);
         pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test1", 
           onSuccess : function(){testDone("test1", true);},
           onError : function(statusObj){testDone("test1", false, statusObj.description);}});

@@ -10,7 +10,7 @@
     
       function startIframe() {
         // test1
-        pmrpc.register("test1", function() {});
+        pmrpc.register("test1", function() {alert("");});
         
         // test2
         pmrpc.register("test2", function(echo) {return echo;});

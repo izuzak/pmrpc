@@ -107,6 +107,7 @@ pmrpc = window.pmrpc = function(){
           // check the acl rights
           if (checkACL(service.acl, serviceCallEvent.origin)) {  
             // if the request is authorized, set internal flag for this callId, and send status update to sender
+            alert("event!");
             requestsBeingProcessed[callId] = 1;
             statusObj.status = "processing";
             callInternal( {
@@ -235,6 +236,7 @@ pmrpc = window.pmrpc = function(){
   
   // internal rpc service that receives status updates for rpc calls 
   function receivePmrpcStatusUpdate(statusObj) {
+    alert("status");
     var callId = statusObj.callId;
     var callObj = callQueue[callId];
 

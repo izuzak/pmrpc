@@ -108,7 +108,7 @@
             
       }
       
-          _IG_RegisterOnloadHandler(startTests);
+      _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});
 
   
     </script>

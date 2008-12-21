@@ -9,17 +9,7 @@
     <script type="text/javascript">
     
       function startIframe() {
-      
-      function ff(e) {
-        alert("event!");
-      }
-      
-      if (window.addEventListener) {
-          window.addEventListener("message", ff, false);
-        } else {
-          window.attachEvent("onmessage", ff);
-        }
-        
+             
         // test1
         pmrpc.register("test1", function() {alert("1");});
         

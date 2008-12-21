@@ -29,10 +29,10 @@
         pmrpc.register("test7", function() {});
         
         // test8
-        pmrpc.register("test8", function() {}, {whitelist: ["http://pmrpc.googlecode.com/svn/trunk/*","file://*"], blacklist:[]});
+        pmrpc.register("test8", function() {}, {whitelist: ["http://www.gmodules*","file://*"], blacklist:[]});
         
         // test9
-        pmrpc.register("test9", function() {}, {whitelist: ["http://pmrpc.googlecode.com/*", "file://*"], blacklist:["http://www.gmodules*", "file*"]});
+        pmrpc.register("test9", function() {}, {whitelist: ["http://www.gmodules*", "file://*"], blacklist:["http://www.gmodules*", "file*"]});
         
         // test10
         pmrpc.register("test10", function() {}, {whitelist: ["http://www.fail.com*"], blacklist:[]});

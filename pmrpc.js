@@ -86,8 +86,6 @@ pmrpc = window.pmrpc = function(){
       return;
     }
     
-    alert("event!");
-    
     // decode arguments, fetch service name, call parameters, and call id
     var callArguments = decode(serviceCallEvent.data);
     var service = registeredServices[callArguments.publicProcedureName];
@@ -238,7 +236,6 @@ pmrpc = window.pmrpc = function(){
   
   // internal rpc service that receives status updates for rpc calls 
   function receivePmrpcStatusUpdate(statusObj) {
-    alert("status");
     var callId = statusObj.callId;
     var callObj = callQueue[callId];
 

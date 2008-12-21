@@ -86,6 +86,8 @@ pmrpc = window.pmrpc = function(){
       return;
     }
     
+    alert("event!");
+    
     // decode arguments, fetch service name, call parameters, and call id
     var callArguments = decode(serviceCallEvent.data);
     var service = registeredServices[callArguments.publicProcedureName];
@@ -107,7 +109,7 @@ pmrpc = window.pmrpc = function(){
           // check the acl rights
           if (checkACL(service.acl, serviceCallEvent.origin)) {  
             // if the request is authorized, set internal flag for this callId, and send status update to sender
-            alert("event!");
+            
             requestsBeingProcessed[callId] = 1;
             statusObj.status = "processing";
             callInternal( {

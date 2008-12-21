@@ -25,13 +25,13 @@
       function startTests() {
         // test1 - default, no return value
         tests["test1"] = {testDescrition : "normal call"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test1", 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test1", 
           onSuccess : function(){testDone("test1", true);},
           onError : function(statusObj){testDone("test1", false, statusObj.description);}});
         
         // test2 - echo parameter through return value
         tests["test2"] = {testDescrition : "echo parameter"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test2", params : ["hello!"], 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test2", params : ["hello!"], 
           onSuccess : function(returnObj){
             if(returnObj.returnValue == "hello!") {
               testDone("test2", true);
@@ -45,13 +45,13 @@
             
         // test3 - 0 retries
         tests["test3"] = {testDescrition : "no retries call"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test3", retries : "0", 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test3", retries : "0", 
           onSuccess : function(){testDone("test3", true);},
           onError : function(statusObj){testDone("test3", false, statusObj.description);}});
           
         // test4 - unregistered procedure call
         tests["test4"] = {testDescrition : "unregistered procedure call"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test4", 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test4", 
           onSuccess : function(){testDone("test4", false, "unregistered procedure called! FAIL");},
           onError : function(statusObj){testDone("test4", true);}});
         
@@ -76,31 +76,31 @@
         
         // test6 destinationDomain supported
         tests["test6"] = {testDescrition : "destination domain supported"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test6", destinationDomain : "*", 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test6", destinationDomain : "*", 
           onSuccess : function(){testDone("test6", true);},
           onError : function(statusObj){testDone("test6", false, "supported destination domain call FAIL");}});
 
         // test6 destinationDomain
         tests["test7"] = {testDescrition : "destination domain unsupported"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test7", destinationDomain : "http://www.fail.com/", 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test7", destinationDomain : "http://www.fail.com/", 
           onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
           onError : function(statusObj){testDone("test7", true);}});      
         
         // test8 acl supported
         tests["test8"] = {testDescrition : "source domain supported"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test8", 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test8", 
           onSuccess : function(statusObj){testDone("test8", true);},
           onError : function(){testDone("test8", false, "supported source domain call FAIL");}});      
         
         // test9 acl unsupported - blacklist fail
         tests["test9"] = {testDescrition : "source domain unsupported through blacklist"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test9", 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test9", 
           onSuccess : function(){testDone("test9", false, "unsupported source domain call FAIL");},
           onError : function(statusObj){testDone("test9", true);}});      
           
         // test10 acl unsupported - whitelist fail
         tests["test10"] = {testDescrition : "source domain unsupported through whitelist"};
-        pmrpc.call({destination : window.parent.frames.gadget1, publicProcedureName : "test10", 
+        pmrpc.call({destination : window.parent.frames.gadget2, publicProcedureName : "test10", 
           onSuccess : function(){testDone("test10", false, "unsupported source domain call FAIL");},
           onError : function(statusObj){testDone("test10", true);}});  
             

@@ -11,7 +11,7 @@
       function startIframe() {
              
         // test1
-        pmrpc.register("test1", function() {alert("1");});
+        pmrpc.register("test1", function() {});
         
         // test2
         pmrpc.register("test2", function(echo) {return echo;});
@@ -32,7 +32,7 @@
         pmrpc.register("test8", function() {}, {whitelist: ["http://pmrpc.googlecode.com/svn/trunk/*","file://*"], blacklist:[]});
         
         // test9
-        pmrpc.register("test9", function() {}, {whitelist: ["http://pmrpc.googlecode.com/*", "file://*"], blacklist:["http://pmrpc.googlecode.com/svn/trunk/*", "file*"]});
+        pmrpc.register("test9", function() {}, {whitelist: ["http://pmrpc.googlecode.com/*", "file://*"], blacklist:["http://www.gmodules*", "file*"]});
         
         // test10
         pmrpc.register("test10", function() {}, {whitelist: ["http://www.fail.com*"], blacklist:[]});

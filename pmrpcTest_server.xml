@@ -74,10 +74,7 @@
           isAsynchronous : true,
           procedure : function(cb) {
             var doSomeMath = 2;
-            alert("1");
-            cb(doSomeMath);
-            alert("3");
-            } } );
+            cb(doSomeMath); } } );
       }
     
     _IG_RegisterOnloadHandler(startIframe);

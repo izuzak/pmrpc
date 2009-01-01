@@ -135,9 +135,7 @@ pmrpc = window.pmrpc = function(){
                 "params" : [statusObj],
                 "retries" : -1 } );
             } else {
-              alert("0");
               var cb = function (returnValue) {
-                alert("2");
                 statusObj.returnValue = returnValue;
                 statusObj.status = "success";
                 delete requestsBeingProcessed[callId];

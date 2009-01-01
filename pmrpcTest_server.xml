@@ -72,8 +72,8 @@
         pmrpc.register( {
           publicProcedureName : "test11", 
           procedure : function(cb) {
-            _IG_FetchContent("http://www.google.com", function(text) {cb(text);})
-          } } );
+            var doSomeMath = 2;
+            cb(doSomeMath); } } );
       }
     
     _IG_RegisterOnloadHandler(startIframe);

@@ -135,6 +135,7 @@ pmrpc = window.pmrpc = function(){
                 "params" : [statusObj],
                 "retries" : -1 } );
             } else {
+              alert("0");
               var cb = function (returnValue) {
                 alert("2");
                 statusObj.returnValue = returnValue;
@@ -145,7 +146,7 @@ pmrpc = window.pmrpc = function(){
                   "publicProcedureName" : "receivePmrpcStatusUpdate",
                   "params" : [statusObj],
                   "retries" : -1 } ); };
-              parameters = parameters.splice(parameters.length-1, 0, cb);
+              parameters.splice(parameters.length-1, 0, cb);
               service.procedure.apply(null, parameters);
             }
           } else {

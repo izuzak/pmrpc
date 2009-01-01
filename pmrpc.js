@@ -118,27 +118,15 @@ pmrpc = window.pmrpc = function(){
               "retries" : -1 } );
             
             // invoke procedure, and expect exception 
+            
+            if (!service.isAsync) {
             try {
-              if (!service.isAsync) {
-                statusObj.returnValue = service.procedure.apply(null, parameters);
-                statusObj.status = "success";
-              } else {
-                var cb = function (returnValue) {
-                  statusObj.returnValue = returnValue;
-                  statusObj.status = "success";
-                  delete requestsBeingProcessed[callId];
-                  callInternal( {
-                    "destination" : serviceCallEvent.source,
-                    "publicProcedureName" : "receivePmrpcStatusUpdate",
-                    "params" : [statusObj],
-                    "retries" : -1 } ); };
-                service.procedure.apply(null, parameters.splice(parameters.length-1, 0, cb));
-              }
+              statusObj.returnValue = service.procedure.apply(null, parameters);
+              statusObj.status = "success";
             } catch (error) {
               statusObj.status = "error";
               statusObj.errorDescription = error.description;
             }
-            
             // delete internal flag for this callId, and return results to sender
             delete requestsBeingProcessed[callId];
             callInternal( {
@@ -146,6 +134,18 @@ pmrpc = window.pmrpc = function(){
               "publicProcedureName" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
               "retries" : -1 } );
+            } else {
+              var cb = function (returnValue) {
+                statusObj.returnValue = returnValue;
+                statusObj.status = "success";
+                delete requestsBeingProcessed[callId];
+                callInternal( {
+                  "destination" : serviceCallEvent.source,
+                  "publicProcedureName" : "receivePmrpcStatusUpdate",
+                  "params" : [statusObj],
+                  "retries" : -1 } ); };
+              service.procedure.apply(null, parameters.splice(parameters.length-1, 0, cb));
+            }
           } else {
             // if the call is not authorized, return error
             statusObj.status = "error";

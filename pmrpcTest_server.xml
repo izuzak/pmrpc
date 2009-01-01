@@ -71,7 +71,7 @@
         // test11
         pmrpc.register( {
           publicProcedureName : "test11", 
-          isAsync : true,
+          isAsynchronous : true,
           procedure : function(cb) {
             var doSomeMath = 2;
             alert("1");

@@ -120,20 +120,20 @@ pmrpc = window.pmrpc = function(){
             // invoke procedure, and expect exception 
             
             if (!service.isAsync) {
-            try {
-              statusObj.returnValue = service.procedure.apply(null, parameters);
-              statusObj.status = "success";
-            } catch (error) {
-              statusObj.status = "error";
-              statusObj.errorDescription = error.description;
-            }
-            // delete internal flag for this callId, and return results to sender
-            delete requestsBeingProcessed[callId];
-            callInternal( {
-              "destination" : serviceCallEvent.source,
-              "publicProcedureName" : "receivePmrpcStatusUpdate",
-              "params" : [statusObj],
-              "retries" : -1 } );
+              try {
+                statusObj.returnValue = service.procedure.apply(null, parameters);
+                statusObj.status = "success";
+              } catch (error) {
+                statusObj.status = "error";
+                statusObj.errorDescription = error.description;
+              }
+              // delete internal flag for this callId, and return results to sender
+              delete requestsBeingProcessed[callId];
+              callInternal( {
+                "destination" : serviceCallEvent.source,
+                "publicProcedureName" : "receivePmrpcStatusUpdate",
+                "params" : [statusObj],
+                "retries" : -1 } );
             } else {
               var cb = function (returnValue) {
                 alert("2");
@@ -145,7 +145,8 @@ pmrpc = window.pmrpc = function(){
                   "publicProcedureName" : "receivePmrpcStatusUpdate",
                   "params" : [statusObj],
                   "retries" : -1 } ); };
-              service.procedure.apply(null, parameters.splice(parameters.length-1, 0, cb));
+              parameters = parameters.splice(parameters.length-1, 0, cb);
+              service.procedure.apply(null, parameters);
             }
           } else {
             // if the call is not authorized, return error

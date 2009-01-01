@@ -74,7 +74,9 @@
           procedure : function(cb) {
             var doSomeMath = 2;
             alert("1");
-            cb(doSomeMath); } } );
+            cb(doSomeMath);
+            alert("3");
+            } } );
       }
     
     _IG_RegisterOnloadHandler(startIframe);

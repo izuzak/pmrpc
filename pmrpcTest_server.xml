@@ -8,38 +8,78 @@
 
     <script type="text/javascript">
     
+      function output(debugText) {
+        var outputText = document.getElementById("Output").innerHTML;
+        document.getElementById("Output").innerHTML = outputText + "<p>" + debugText + "</p>";
+      }
+    
       function startIframe() {
-             
+        // check if browser is postMessage compatible
+        if (typeof window.postMessage === "undefined") {
+          output("Your browser doesn't support the HTML5 postMessage API."
+          return;
+        }
+        
         // test1
-        pmrpc.register("test1", function() {});
+        pmrpc.register( {
+          publicProcedureName : "test1",
+          procedure : function() {} } );
         
         // test2
-        pmrpc.register("test2", function(echo) {return echo;});
+        pmrpc.register( {
+          publicProcedureName : "test2", 
+          procedure : function(echo) {return echo;} });
         
         // test3
-        pmrpc.register("test3", function() {});
+        pmrpc.register( {
+          publicProcedureName : "test3", 
+          procedure : function() {} });
         
         // test4
-        pmrpc.register("test4_unregistered", function() {});
+        pmrpc.register( {
+          publicProcedureName : "test4_unregistered", 
+          procedure : function() {} });
         
         // test6
-        pmrpc.register("test6", function() {});
+        pmrpc.register( {
+          publicProcedureName : "test6", 
+          procedure : function() {} });
         
         // test7
-        pmrpc.register("test7", function() {});
+        pmrpc.register( {
+          publicProcedureName : "test7", 
+          procedure : function() {} });
         
         // test8
-        pmrpc.register("test8", function() {}, {whitelist: ["http://www.gmodules*","file://*"], blacklist:[]});
+        pmrpc.register( {
+          publicProcedureName : "test8", 
+          procedure : function() {}, 
+          acl : {whitelist: ["http://www.gmodules*","file://*"], blacklist:[]} });
         
         // test9
-        pmrpc.register("test9", function() {}, {whitelist: ["http://www.gmodules*", "file://*"], blacklist:["http://www.gmodules*", "file*"]});
+        pmrpc.register( {
+          publicProcedureName : "test9", 
+          procedure : function() {}, 
+          acl : {whitelist: ["http://www.gmodules*", "file://*"], blacklist:["http://www.gmodules*", "file*"]} });
         
         // test10
-        pmrpc.register("test10", function() {}, {whitelist: ["http://www.fail.com*"], blacklist:[]});
+        pmrpc.register( {
+          publicProcedureName : "test10", 
+          procedure : function() {}, 
+          acl : {whitelist: ["http://www.fail.com*"], blacklist:[]} });
+        
+        // test11
+        pmrpc.register( {
+          publicProcedureName : "test11", 
+          procedure : function(cb) {
+            _IG_FetchContent("http://www.google.com", function(text) {cb(text);})
+          } } );
       }
     
     _IG_RegisterOnloadHandler(startIframe);
     
-    </script>  
+    </script>
+    
+    <div id="Output"></div>
   ]]></Content>
 </Module>

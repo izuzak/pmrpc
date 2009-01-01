@@ -1,5 +1,5 @@
 /*
- * pmrpc 0.1 - HTML5 postMessage based RPC library 
+ * pmrpc 0.2 - HTML5 postMessage based RPC library 
  * http://code.google.com/p/pmrpc
  *
  * Copyright (c) 2008 Ivan Zuzak
@@ -68,10 +68,11 @@ pmrpc = window.pmrpc = function(){
   
   // register a service available for remote calls
   // if no acl is given, assume that it is available to everyone
-  function register(publicProcedureName, procedure, acl) {
-    registeredServices[publicProcedureName] = {
-      "procedure" : procedure, 
-      "acl" : typeof acl !== "undefined" ? acl : {whitelist: ["*"], blacklist: []}};
+  function register(config) {
+    registeredServices[config.publicProcedureName] = {
+      "procedure" : config.procedure, 
+      "isAsync" : typeof config.isAsynchronous !== "undefined" ? config.isAsynchronous : false,
+      "acl" : typeof config.acl !== "undefined" ? config.acl : {whitelist: ["*"], blacklist: []}};
   }
 
   // unregister a previously registered procedure
@@ -118,8 +119,21 @@ pmrpc = window.pmrpc = function(){
             
             // invoke procedure, and expect exception 
             try {
-              statusObj.returnValue = service.procedure.apply(null, parameters);
-              statusObj.status = "success";
+              if (!service.isAsync) {
+                statusObj.returnValue = service.procedure.apply(null, parameters);
+                statusObj.status = "success";
+              } else {
+                var cb = function (returnValue) {
+                  statusObj.returnValue = returnValue;
+                  statusObj.status = "success";
+                  delete requestsBeingProcessed[callId];
+                  callInternal( {
+                    "destination" : serviceCallEvent.source,
+                    "publicProcedureName" : "receivePmrpcStatusUpdate",
+                    "params" : [statusObj],
+                    "retries" : -1 } ); };
+                service.procedure.apply(null, parameters.splice(parameters.length-1, 0, cb));
+              }
             } catch (error) {
               statusObj.status = "error";
               statusObj.errorDescription = error.description;
@@ -132,7 +146,6 @@ pmrpc = window.pmrpc = function(){
               "publicProcedureName" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
               "retries" : -1 } );
-            
           } else {
             // if the call is not authorized, return error
             statusObj.status = "error";
@@ -272,7 +285,9 @@ pmrpc = window.pmrpc = function(){
   }
   
   // register internal procedure for communication between pmrpc modules
-  register("receivePmrpcStatusUpdate", receivePmrpcStatusUpdate);
+  register( {
+    publicProcedureName : "receivePmrpcStatusUpdate", 
+    procedure : receivePmrpcStatusUpdate } );
   
   // return public methods
   return {

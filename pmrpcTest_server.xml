@@ -73,6 +73,7 @@
           publicProcedureName : "test11", 
           procedure : function(cb) {
             var doSomeMath = 2;
+            alert("1");
             cb(doSomeMath); } } );
       }
     

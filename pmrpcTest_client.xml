@@ -25,7 +25,7 @@
       function startTests() {
         // check if browser is postMessage compatible
         if (typeof window.postMessage === "undefined") {
-          output("Your browser doesn't support the HTML5 postMessage API."
+          output("Your browser doesn't support the HTML5 postMessage API.");
           return;
         }
       

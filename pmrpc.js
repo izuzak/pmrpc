@@ -69,7 +69,7 @@ pmrpc = window.pmrpc = function(){
   // register a service available for remote calls
   // if no acl is given, assume that it is available to everyone
   function register(config) {
-    registeredServices[config.method] = {
+    registeredServices[config.publicProcedureName] = {
       "procedure" : config.procedure,
       "context" : config.procedure.context,
       "isAsync" : typeof config.isAsynchronous !== "undefined" ? config.isAsynchronous : false,
@@ -288,7 +288,7 @@ pmrpc = window.pmrpc = function(){
   
   // register internal procedure for communication between pmrpc modules
   register( {
-    method : "receivePmrpcStatusUpdate", 
+    publicProcedureName : "receivePmrpcStatusUpdate", 
     procedure : receivePmrpcStatusUpdate } );
   
   // return public methods

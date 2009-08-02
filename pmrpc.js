@@ -274,7 +274,7 @@ pmrpc = window.pmrpc = function(){
         "params" : callObj.params,
         "status" : "success",
         "returnValue" : statusObj.returnValue} );
-    
+    }
   }
   
   // attach the pmrpc event listener

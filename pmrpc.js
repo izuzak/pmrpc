@@ -196,7 +196,7 @@ pmrpc = window.pmrpc = function(){
   function callInternal(config) {
     var callObj = {
       destination : config.destination,
-      method : config.method,
+      method : config.publicProcedureName,
       params : typeof config.params !== "undefined" ? config.params : [],
       onSuccess : typeof config.onSuccess !== "undefined" ? config.onSuccess : function (){},
       onError : typeof config.onError !== "undefined" ? config.onError : function (){},

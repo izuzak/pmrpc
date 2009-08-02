@@ -1,8 +1,8 @@
 /*
- * pmrpc 0.2 - HTML5 postMessage based RPC library 
+ * pmrpc 0.3 - HTML5 postMessage-based JSON-RPC library 
  * http://code.google.com/p/pmrpc
  *
- * Copyright (c) 2008 Ivan Zuzak
+ * Copyright (c) 2009 Ivan Zuzak
  * GPL license
  */
 
@@ -70,7 +70,8 @@ pmrpc = window.pmrpc = function(){
   // if no acl is given, assume that it is available to everyone
   function register(config) {
     registeredServices[config.publicProcedureName] = {
-      "procedure" : config.procedure, 
+      "procedure" : config.procedure,
+      "context" : config.procedure.context,
       "isAsync" : typeof config.isAsynchronous !== "undefined" ? config.isAsynchronous : false,
       "acl" : typeof config.acl !== "undefined" ? config.acl : {whitelist: ["*"], blacklist: []}};
   }
@@ -101,7 +102,7 @@ pmrpc = window.pmrpc = function(){
     if (typeof service !== "undefined") {      
       if (typeof callId === "undefined") {
         // if there is no callId, then this is an internal call so just invoke the procedure
-        service.procedure.apply(null, parameters);
+        service.procedure.apply(service.context, parameters);
       } else {
         // if there is a callId, check if the request is already being processed
         if (typeof requestsBeingProcessed[callId] === "undefined") {
@@ -121,7 +122,7 @@ pmrpc = window.pmrpc = function(){
             
             if (!service.isAsync) {
               try {
-                statusObj.returnValue = service.procedure.apply(null, parameters);
+                statusObj.returnValue = service.procedure.apply(service.context, parameters);
                 statusObj.status = "success";
               } catch (error) {
                 statusObj.status = "error";
@@ -145,7 +146,7 @@ pmrpc = window.pmrpc = function(){
                   "params" : [statusObj],
                   "retries" : -1 } ); };
               parameters.splice(parameters.length-1, 0, cb);
-              service.procedure.apply(null, parameters);
+              service.procedure.apply(service.context, parameters);
             }
           } else {
             // if the call is not authorized, return error

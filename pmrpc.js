@@ -15,12 +15,12 @@ pmrpc = window.pmrpc = function(){
    
   // JSON encode an object into pmrpc message
   function encode(obj){
-    return "pmrpc." + JSON.stringify(obj);
+    return JSON.stringify(obj);
   }
 
   // JSON decode a pmrpc message
   function decode(str){
-    return JSON.parse(str.substring("pmrpc.".length));
+    return JSON.parse(str);
   }
   
   // Converts a wildcard expression into a regular expression
@@ -69,7 +69,7 @@ pmrpc = window.pmrpc = function(){
   // register a service available for remote calls
   // if no acl is given, assume that it is available to everyone
   function register(config) {
-    registeredServices[config.publicProcedureName] = {
+    registeredServices[config.method] = {
       "procedure" : config.procedure,
       "context" : config.procedure.context,
       "isAsync" : typeof config.isAsynchronous !== "undefined" ? config.isAsynchronous : false,
@@ -77,22 +77,22 @@ pmrpc = window.pmrpc = function(){
   }
 
   // unregister a previously registered procedure
-  function unregister(publicProcedureName) {
-    delete registeredServices[publicProcedureName];
+  function unregister(method) {
+    delete registeredServices[method];
   }
   
   // receive and execute a RPC call
   function dispatch(serviceCallEvent) {    
-    // if the message is not for pmrpc, ignore it.
-    if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
-      return;
-    }
-    
     // decode arguments, fetch service name, call parameters, and call id
     var callArguments = decode(serviceCallEvent.data);
-    var service = registeredServices[callArguments.publicProcedureName];
+
+    // check JSON-RPC version
+    if ( callArguments.jsonrpc != "2.0" )	    
+	    	return;    
+
+    var service = registeredServices[callArguments.method];
     var parameters = callArguments.params.concat([serviceCallEvent.source]);
-    var callId = callArguments.callId;
+    var callId = callArguments.id;
     
     // create a status object for sending reports to the sender
     var statusObj = {};
@@ -100,8 +100,8 @@ pmrpc = window.pmrpc = function(){
   
     // check if service with specified name is registered
     if (typeof service !== "undefined") {      
-      if (typeof callId === "undefined") {
-        // if there is no callId, then this is an internal call so just invoke the procedure
+      if (callId.substring(0, "internal".length + 1)) {
+	// if the callId starts with "internal" it's an internal call so just call the service
         service.procedure.apply(service.context, parameters);
       } else {
         // if there is a callId, check if the request is already being processed
@@ -114,7 +114,7 @@ pmrpc = window.pmrpc = function(){
             statusObj.status = "processing";
             callInternal( {
               "destination" : serviceCallEvent.source,
-              "publicProcedureName" : "receivePmrpcStatusUpdate",
+              "method" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
               "retries" : -1 } );
             
@@ -132,7 +132,7 @@ pmrpc = window.pmrpc = function(){
               delete requestsBeingProcessed[callId];
               callInternal( {
                 "destination" : serviceCallEvent.source,
-                "publicProcedureName" : "receivePmrpcStatusUpdate",
+                "method" : "receivePmrpcStatusUpdate",
                 "params" : [statusObj],
                 "retries" : -1 } );
             } else {
@@ -142,7 +142,7 @@ pmrpc = window.pmrpc = function(){
                 delete requestsBeingProcessed[callId];
                 callInternal( {
                   "destination" : serviceCallEvent.source,
-                  "publicProcedureName" : "receivePmrpcStatusUpdate",
+                  "method" : "receivePmrpcStatusUpdate",
                   "params" : [statusObj],
                   "retries" : -1 } ); };
               parameters.splice(parameters.length-1, 0, cb);
@@ -154,7 +154,7 @@ pmrpc = window.pmrpc = function(){
             statusObj.description = "request not authorized";
             callInternal( {
               "destination" : serviceCallEvent.source,
-              "publicProcedureName" : "receivePmrpcStatusUpdate",
+              "method" : "receivePmrpcStatusUpdate",
               "params" : [statusObj],
               "retries" : -1 } );
           }
@@ -169,7 +169,7 @@ pmrpc = window.pmrpc = function(){
       statusObj.description = "service not registered";
       callInternal( {
         "destination" : serviceCallEvent.source,
-        "publicProcedureName" : "receivePmrpcStatusUpdate",
+        "method" : "receivePmrpcStatusUpdate",
         "params" : [statusObj],
         "retries" : -1 } );
     }
@@ -186,7 +186,7 @@ pmrpc = window.pmrpc = function(){
 
   // call remote method, with configuration:
   //   destination - window on which the method is registered
-  //   publicProcedureName - name under which the method is registered
+  //   method - name under which the method is registered
   //   params - array of parameters fir the method call
   //   onSuccess - method which will be called if the rpc call was successful
   //   onError - method which will be called if the rpc call was not successful
@@ -196,7 +196,7 @@ pmrpc = window.pmrpc = function(){
   function callInternal(config) {
     var callObj = {
       destination : config.destination,
-      publicProcedureName : config.publicProcedureName,
+      method : config.method,
       params : typeof config.params !== "undefined" ? config.params : [],
       onSuccess : typeof config.onSuccess !== "undefined" ? config.onSuccess : function (){},
       onError : typeof config.onError !== "undefined" ? config.onError : function (){},
@@ -210,7 +210,7 @@ pmrpc = window.pmrpc = function(){
     if (config.retries === -1) {
       // if retries is -1, this is an internal status call
       callObj.destination.postMessage(
-        encode({"publicProcedureName" : callObj.publicProcedureName, "params" : callObj.params}), 
+        encode({"jsonrpc": "2.0", "method" : callObj.method, "params" : callObj.params, "id": "internal" + callObj.callId}), 
         callObj.destinationDomain);
     } else {
       // otherwise, its a normal call. create an entry and start the wait-for-response protocol
@@ -232,7 +232,7 @@ pmrpc = window.pmrpc = function(){
         delete callQueue[callId];
         callObj.onError( { 
           "destination" : callObj.destination,
-          "publicProcedureName" : callObj.publicProcedureName,
+          "method" : callObj.method,
           "params" : callObj.params,
           "status" : "error",
           "description" : callObj.status === "requestSent" ? "destination not responding" : callObj.description} );
@@ -241,7 +241,7 @@ pmrpc = window.pmrpc = function(){
         callObj.status = "requestSent";
         callObj.retries = callObj.retries - 1;
         callObj.destination.postMessage(
-          encode({"publicProcedureName" : callObj.publicProcedureName, "params" : callObj.params, "callId" : callObj.callId}),
+          encode({"jsonrpc": "2.0", "method" : callObj.method, "params" : callObj.params, "id" : callObj.callId}),
           callObj.destinationDomain);
         callQueue[callId] = callObj;
         window.setTimeout(function() { waitForResponse(callId); }, callObj.timeout);
@@ -270,11 +270,11 @@ pmrpc = window.pmrpc = function(){
       delete callQueue[callId];
       callObj.onSuccess( { 
         "destination" : callObj.destination,
-        "publicProcedureName" : callObj.publicProcedureName,
+        "method" : callObj.method,
         "params" : callObj.params,
         "status" : "success",
         "returnValue" : statusObj.returnValue} );
-    }
+    
   }
   
   // attach the pmrpc event listener
@@ -288,7 +288,7 @@ pmrpc = window.pmrpc = function(){
   
   // register internal procedure for communication between pmrpc modules
   register( {
-    publicProcedureName : "receivePmrpcStatusUpdate", 
+    method : "receivePmrpcStatusUpdate", 
     procedure : receivePmrpcStatusUpdate } );
   
   // return public methods

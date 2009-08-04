@@ -2,7 +2,7 @@
  * pmrpc 0.3 - HTML5 postMessage-based JSON-RPC library 
  * http://code.google.com/p/pmrpc
  *
- * Copyright (c) 2009 Ivan Zuzak
+ * Copyright (c) 2009 Ivan Zuzak, Marko Ivankovic
  * GPL license
  */
 
@@ -12,7 +12,6 @@ pmrpc = window.pmrpc = function(){
       typeof JSON.parse === "undefined") {
     throw new Exception("pmrpc requires the JSON library");
   }
-   
   // JSON encode an object into pmrpc message
   function encode(obj){
     return JSON.stringify(obj);
@@ -20,7 +19,7 @@ pmrpc = window.pmrpc = function(){
 
   // JSON decode a pmrpc message
   function decode(str){
-    return JSON.parse(str);
+	return JSON.parse(str);
   }
   
   // Converts a wildcard expression into a regular expression
@@ -84,10 +83,19 @@ pmrpc = window.pmrpc = function(){
   // receive and execute a RPC call
   function dispatch(serviceCallEvent) {    
     // decode arguments, fetch service name, call parameters, and call id
-    var callArguments = decode(serviceCallEvent.data);
+    try {
+	    var callArguments = decode(serviceCallEvent.data);
+	}
+    catch (error) {
+	    // JSON parsing failed
+	    // TODO: return JSON-RPC error object number -32700
+	    // kind of wtf because we are not even certain it was json-rpc to begin with...
+	    return;
+    }
 
     if (callArguments.jsonrpc != "2.0")
 	    return;
+
 
     var service = registeredServices[callArguments.method];
     var parameters = callArguments.params.concat([serviceCallEvent.source]);
@@ -96,11 +104,11 @@ pmrpc = window.pmrpc = function(){
     // create a status object for sending reports to the sender
     var statusObj = {};
     statusObj.callId = callId;
-  
+ 
     // check if service with specified name is registered
     if (typeof service !== "undefined") {      
-      if (typeof callId === "undefined") {
-        // if there is no callId, then this is an internal call so just invoke the procedure
+      if (callId.substring(0, "internal".length + 1) == "internal" ) {
+        // callId starts with "internal" so it is in fact an internal call
         service.procedure.apply(service.context, parameters);
       } else {
         // if there is a callId, check if the request is already being processed
@@ -122,7 +130,7 @@ pmrpc = window.pmrpc = function(){
             if (!service.isAsync) {
               try {
                 statusObj.returnValue = service.procedure.apply(service.context, parameters);
-                statusObj.status = "success";
+                statusObj.status = "success";		
               } catch (error) {
                 statusObj.status = "error";
                 statusObj.errorDescription = error.description;
@@ -183,6 +191,23 @@ pmrpc = window.pmrpc = function(){
     callInternal(config);
   }
 
+  // Generates a version 4 UUID
+  // fun to use as call ids and
+  // compliant with JSON-RPC specs
+  function generateUUID(){
+	var uuid = [], nineteen = "89AB", hex = "0123456789ABCDEF";
+	// Filling it with random hex data
+	for (var i = 0; i < 36; i++) uuid[i] = hex[Math.floor(Math.random() * 16)];
+	// Version char thingy
+	uuid[14] = '4';
+	// Set the random 19-teenth char
+	uuid[19] = nineteen[Math.floor(Math.random() * 4)];
+	// Make it look nice with all them '-'s
+	uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+	// Wooo, we have ourselfs a random (well, sorta) UUID
+	return uuid.join('');
+  }
+
   // call remote method, with configuration:
   //   destination - window on which the method is registered
   //   publicProcedureName - name under which the method is registered
@@ -202,14 +227,14 @@ pmrpc = window.pmrpc = function(){
       retries : typeof config.retries !== "undefined" ? config.retries : 5,
       timeout : typeof config.timeout !== "undefined" ? config.timeout : 1000,
       destinationDomain : typeof config.destinationDomain !== "undefined" ? config.destinationDomain : "*",
-      callId : Math.random() + "" + Math.random(),
+      callId : generateUUID(), 
       status : "requestNotSent"
     };
     
     if (config.retries === -1) {
       // if retries is -1, this is an internal status call
       callObj.destination.postMessage(
-        encode({"jsonrpc" : "2.0", "method" : callObj.publicProcedureName, "params" : callObj.params}), 
+        encode({"jsonrpc" : "2.0", "method" : callObj.publicProcedureName, "params" : callObj.params, "id" : "internal" + callObj.callId}), 
         callObj.destinationDomain);
     } else {
       // otherwise, its a normal call. create an entry and start the wait-for-response protocol
@@ -240,7 +265,7 @@ pmrpc = window.pmrpc = function(){
         callObj.status = "requestSent";
         callObj.retries = callObj.retries - 1;
         callObj.destination.postMessage(
-          encode({"jsonrpc" : "2.0", "method" : callObj.publicProcedureName, "params" : callObj.params, "callId" : callObj.callId}),
+          encode({"jsonrpc" : "2.0", "method" : callObj.publicProcedureName, "params" : callObj.params, "id" : callObj.callId}),
           callObj.destinationDomain);
         callQueue[callId] = callObj;
         window.setTimeout(function() { waitForResponse(callId); }, callObj.timeout);

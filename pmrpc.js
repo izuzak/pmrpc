@@ -21,6 +21,67 @@ pmrpc = window.pmrpc = function(){
   function decode(str){
 	return JSON.parse(str);
   }
+
+  // Generates a version 4 UUID
+  // fun to use as call ids and
+  // compliant with JSON-RPC specs
+  function generateUUID(){
+	var uuid = [], nineteen = "89AB", hex = "0123456789ABCDEF";
+	// Filling it with random hex data
+	for (var i = 0; i < 36; i++) uuid[i] = hex[Math.floor(Math.random() * 16)];
+	// Version char thingy
+	uuid[14] = '4';
+	// Set the random 19-teenth char
+	uuid[19] = nineteen[Math.floor(Math.random() * 4)];
+	// Make it look nice with all them '-'s
+	uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+	// Wooo, we have ourselfs a random (well, sorta) UUID
+	return uuid.join('');
+  }
+
+  // Creates a base JSON-RPC object, usable for both request and response
+  // as of JSON-RPC 2.0 it only contains one field "jsonrpc" with value exactley "2.0"
+  function JSONRpcCreateBaseObject(){
+	var call = new Object;	 
+	call.jsonrpc = "2.0";
+	return call;
+  }
+
+  // Creates a JSON-RPC request object for the given method and parameters
+  function JSONRpcCreateRequestObject(procedureName, parameters, id){
+	var call = JSONRpcCreateBaseObject();
+	call.method = procedureName;
+	call.params = parameters;
+	if (typeof id !== "undefined")
+		call.id = id;
+	return call;
+  }
+
+  // Creates a JSON-RPC error object complete with message and error code
+  function JSONRpcCreateErrorObject(errorcode, message, data){
+	  var error = new Object;
+	  error.code = errorcode;
+	  error.message = message;
+	  error.data = data;
+	  return error;
+  }
+
+  // Creates a JSON-RPC response object.
+  function JSONRpcCreateResponseObject(error, result, id){
+	var response = JSONRpcCreateBaseObject();
+	response.id = id;
+
+	// check to see if the error object is set
+	if (typeof error === "undefined") {
+		// no errors, go with the payload
+		response.result = result;
+	}
+	else {
+		// error response
+		response.error = error;
+	}
+	return response;
+  }  
   
   // Converts a wildcard expression into a regular expression
   function convertWildcardToRegex(wildcardExpression) {
@@ -96,7 +157,6 @@ pmrpc = window.pmrpc = function(){
     if (callArguments.jsonrpc != "2.0")
 	    return;
 
-
     var service = registeredServices[callArguments.method];
     var parameters = callArguments.params.concat([serviceCallEvent.source]);
     var callId = callArguments.id;
@@ -107,7 +167,7 @@ pmrpc = window.pmrpc = function(){
  
     // check if service with specified name is registered
     if (typeof service !== "undefined") {      
-      if (callId.substring(0, "internal".length + 1) == "internal" ) {
+      if (callId.substring(0, "rpc.pmrpc.internal".length + 1) == "rpc.pmrpc.internal" ) {
         // callId starts with "internal" so it is in fact an internal call
         service.procedure.apply(service.context, parameters);
       } else {
@@ -191,22 +251,6 @@ pmrpc = window.pmrpc = function(){
     callInternal(config);
   }
 
-  // Generates a version 4 UUID
-  // fun to use as call ids and
-  // compliant with JSON-RPC specs
-  function generateUUID(){
-	var uuid = [], nineteen = "89AB", hex = "0123456789ABCDEF";
-	// Filling it with random hex data
-	for (var i = 0; i < 36; i++) uuid[i] = hex[Math.floor(Math.random() * 16)];
-	// Version char thingy
-	uuid[14] = '4';
-	// Set the random 19-teenth char
-	uuid[19] = nineteen[Math.floor(Math.random() * 4)];
-	// Make it look nice with all them '-'s
-	uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
-	// Wooo, we have ourselfs a random (well, sorta) UUID
-	return uuid.join('');
-  }
 
   // call remote method, with configuration:
   //   destination - window on which the method is registered
@@ -233,9 +277,7 @@ pmrpc = window.pmrpc = function(){
     
     if (config.retries === -1) {
       // if retries is -1, this is an internal status call
-      callObj.destination.postMessage(
-        encode({"jsonrpc" : "2.0", "method" : callObj.publicProcedureName, "params" : callObj.params, "id" : "internal" + callObj.callId}), 
-        callObj.destinationDomain);
+      callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params, callObj.callId), callObj.destinationDomain);
     } else {
       // otherwise, its a normal call. create an entry and start the wait-for-response protocol
       callQueue[callObj.callId] = callObj;
@@ -248,7 +290,7 @@ pmrpc = window.pmrpc = function(){
     var callObj = callQueue[callId];
     
     // if the call was processed or is being processed, stop sending requests
-    if (typeof callObj === "undefined" || callObj.status === "processing") {
+    if (typeof callObj === "undefined") {
       return;
     } else {
       // if the retried the maximum number of times, give up and report an error
@@ -264,9 +306,7 @@ pmrpc = window.pmrpc = function(){
         // if more retries are lest, send new request with same callId
         callObj.status = "requestSent";
         callObj.retries = callObj.retries - 1;
-        callObj.destination.postMessage(
-          encode({"jsonrpc" : "2.0", "method" : callObj.publicProcedureName, "params" : callObj.params, "id" : callObj.callId}),
-          callObj.destinationDomain);
+        callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params), callObj.destinationDomain);
         callQueue[callId] = callObj;
         window.setTimeout(function() { waitForResponse(callId); }, callObj.timeout);
       }

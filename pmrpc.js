@@ -81,8 +81,8 @@ pmrpc = window.pmrpc = function(){
 		response.error = error;
 	}
 	return response;
-  }  
-  
+  } 
+
   // Converts a wildcard expression into a regular expression
   function convertWildcardToRegex(wildcardExpression) {
     var regex = wildcardExpression.replace(/([\^\$\.\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g,"\\$1");
@@ -118,6 +118,82 @@ pmrpc = window.pmrpc = function(){
     
     return isWhitelisted && !isBlacklisted;
   }
+
+  function JSONRpcProcessRequest(request, origin){
+  	// decode arguments, fetch service name, call parameters, and call id
+	try {
+		var callArguments = decode(serviceCallEvent.data);
+	}
+	catch (error) {
+		// JSON parsing failed, returning JSON-RPC error message -32700
+		// kind of wtf because we are not even certain it was json-rpc to begin with...		
+		// error object is first
+		// null response (error instead)
+		// null id
+		return JSONRpcCreateResponseObject(
+			JSONRpcCreateErrorObject(-32700, "Parse error", "Invalid JSON. An error occured on server while parsing JSON(?) text"),
+			null,
+			null
+			);
+	}
+
+	if (callArguments.jsonrpc != "2.0") {
+		// Invalid JSON-RPC request		
+		return JSONRpcCreateResponseObject(
+			JSONRpcCreateErrorObject(-32600, "Invalid request", "The recived JSON is not a valid JSON-RPC 2.0 request"),
+			null,
+			null
+			);
+	}
+
+	var id = request.id;
+  	var service = fetchRegisteredService(request.method);
+	if (typeof service !== "undefined"){
+		// So there is a service afterall...
+          	// check the acl rights
+	        if (checkACL(service.acl, origin)) {
+			// ok, go
+			try {
+				returnValue = service.procedure.apply(service.context, parameters);
+				return JSONRpcCreateResponseObject(null,
+					returnValue,
+					id
+				);
+			} catch (error) {
+				// uh-oh
+				// the -1 value is "application defined" as far as JSON-RPC is considered
+				return JSONRpcCreateResponseObject(
+					JSONRpcCreateErrorObject(-1, "Remote crash", error.description),
+					null,
+					id
+					);
+			}
+		}
+		else {
+			// access denied
+			if (typeof id !== "undefined"){
+				// And it's not notification
+				return JSONRpcCreateResponseObject(
+					JSONRpcCreateErrorObject(-32099, "Access denied", "Access denied"),
+					null,
+					id
+					);
+			}
+		}
+	}
+	else {
+		// No such method
+		if (typeof id !== "undefined"){
+			// And it's not notification
+			return JSONRpcCreateResponseObject(
+				JSONRpcCreateErrorObject(-32601, "Method not found", "The requestd remote procedure does not exist or is not available"),
+				null,
+				id
+				);
+		}
+	}
+  }
+  
   
   // dictionary of services registered for remote calls
   var registeredServices = {};
@@ -142,104 +218,9 @@ pmrpc = window.pmrpc = function(){
   }
   
   // receive and execute a RPC call
-  function dispatch(serviceCallEvent) {    
-    // decode arguments, fetch service name, call parameters, and call id
-    try {
-	    var callArguments = decode(serviceCallEvent.data);
-	}
-    catch (error) {
-	    // JSON parsing failed
-	    // TODO: return JSON-RPC error object number -32700
-	    // kind of wtf because we are not even certain it was json-rpc to begin with...
-	    return;
-    }
-
-    if (callArguments.jsonrpc != "2.0")
-	    return;
-
-    var service = registeredServices[callArguments.method];
-    var parameters = callArguments.params.concat([serviceCallEvent.source]);
-    var callId = callArguments.id;
-        
-    // create a status object for sending reports to the sender
-    var statusObj = {};
-    statusObj.callId = callId;
- 
-    // check if service with specified name is registered
-    if (typeof service !== "undefined") {      
-      if (callId.substring(0, "rpc.pmrpc.internal".length + 1) == "rpc.pmrpc.internal" ) {
-        // callId starts with "internal" so it is in fact an internal call
-        service.procedure.apply(service.context, parameters);
-      } else {
-        // if there is a callId, check if the request is already being processed
-        if (typeof requestsBeingProcessed[callId] === "undefined") {
-          // check the acl rights
-          if (checkACL(service.acl, serviceCallEvent.origin)) {  
-            // if the request is authorized, set internal flag for this callId, and send status update to sender
-            
-            requestsBeingProcessed[callId] = 1;
-            statusObj.status = "processing";
-            callInternal( {
-              "destination" : serviceCallEvent.source,
-              "publicProcedureName" : "receivePmrpcStatusUpdate",
-              "params" : [statusObj],
-              "retries" : -1 } );
-            
-            // invoke procedure, and expect exception 
-            
-            if (!service.isAsync) {
-              try {
-                statusObj.returnValue = service.procedure.apply(service.context, parameters);
-                statusObj.status = "success";		
-              } catch (error) {
-                statusObj.status = "error";
-                statusObj.errorDescription = error.description;
-              }
-              // delete internal flag for this callId, and return results to sender
-              delete requestsBeingProcessed[callId];
-              callInternal( {
-                "destination" : serviceCallEvent.source,
-                "publicProcedureName" : "receivePmrpcStatusUpdate",
-                "params" : [statusObj],
-                "retries" : -1 } );
-            } else {
-              var cb = function (returnValue) {
-                statusObj.returnValue = returnValue;
-                statusObj.status = "success";
-                delete requestsBeingProcessed[callId];
-                callInternal( {
-                  "destination" : serviceCallEvent.source,
-                  "publicProcedureName" : "receivePmrpcStatusUpdate",
-                  "params" : [statusObj],
-                  "retries" : -1 } ); };
-              parameters.splice(parameters.length-1, 0, cb);
-              service.procedure.apply(service.context, parameters);
-            }
-          } else {
-            // if the call is not authorized, return error
-            statusObj.status = "error";
-            statusObj.description = "request not authorized";
-            callInternal( {
-              "destination" : serviceCallEvent.source,
-              "publicProcedureName" : "receivePmrpcStatusUpdate",
-              "params" : [statusObj],
-              "retries" : -1 } );
-          }
-        } else {
-          // if call with specified callId is already being processed, just ignore this message
-          return;
-        }
-      }
-    } else {
-      // if service with specified name is not registered, return error
-      statusObj.status = "error";
-      statusObj.description = "service not registered";
-      callInternal( {
-        "destination" : serviceCallEvent.source,
-        "publicProcedureName" : "receivePmrpcStatusUpdate",
-        "params" : [statusObj],
-        "retries" : -1 } );
-    }
+  function dispatch(serviceCallEvent) {
+	response = JSONRpcProcessRequest(serviceCallEvent.data, serviceCallEvent.origin);
+	// TODO: <<nastavi tu>>
   }
   
   // public call method
@@ -258,7 +239,6 @@ pmrpc = window.pmrpc = function(){
   //   params - array of parameters fir the method call
   //   onSuccess - method which will be called if the rpc call was successful
   //   onError - method which will be called if the rpc call was not successful
-  //   retries - number of retries pmrpc will attpempt if previous calls were not successful
   //   timeout - number of miliseconds pmrpc will wait for any kind of answer before givnig up or retrying
   //   destinationDoman - domain of the destination that should process the call
   function callInternal(config) {
@@ -268,53 +248,18 @@ pmrpc = window.pmrpc = function(){
       params : typeof config.params !== "undefined" ? config.params : [],
       onSuccess : typeof config.onSuccess !== "undefined" ? config.onSuccess : function (){},
       onError : typeof config.onError !== "undefined" ? config.onError : function (){},
-      retries : typeof config.retries !== "undefined" ? config.retries : 5,
       timeout : typeof config.timeout !== "undefined" ? config.timeout : 1000,
       destinationDomain : typeof config.destinationDomain !== "undefined" ? config.destinationDomain : "*",
       callId : generateUUID(), 
       status : "requestNotSent"
     };
-    
-    if (config.retries === -1) {
-      // if retries is -1, this is an internal status call
-      callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params, callObj.callId), callObj.destinationDomain);
-    } else {
-      // otherwise, its a normal call. create an entry and start the wait-for-response protocol
-      callQueue[callObj.callId] = callObj;
-      waitForResponse(callObj.callId);
-    }
-  }
-  
-  // periodically send requests, until all retries are exhausted
-  function waitForResponse(callId) {
-    var callObj = callQueue[callId];
-    
-    // if the call was processed or is being processed, stop sending requests
-    if (typeof callObj === "undefined") {
-      return;
-    } else {
-      // if the retried the maximum number of times, give up and report an error
-      if (callObj.retries <= -1) {
-        delete callQueue[callId];
-        callObj.onError( { 
-          "destination" : callObj.destination,
-          "publicProcedureName" : callObj.publicProcedureName,
-          "params" : callObj.params,
-          "status" : "error",
-          "description" : callObj.status === "requestSent" ? "destination not responding" : callObj.description} );
-      } else {
-        // if more retries are lest, send new request with same callId
-        callObj.status = "requestSent";
-        callObj.retries = callObj.retries - 1;
-        callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params), callObj.destinationDomain);
-        callQueue[callId] = callObj;
-        window.setTimeout(function() { waitForResponse(callId); }, callObj.timeout);
-      }
-    }
+
+    callQueue[callObj.id] = callObj;
+    callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params, callObj.callId), callObj.destinationDomain);
   }
   
   // internal rpc service that receives status updates for rpc calls 
-  function receivePmrpcStatusUpdate(statusObj) {
+  function ReceiveJSONRPCResponse(statusObj) {
     var callId = statusObj.callId;
     var callObj = callQueue[callId];
     
@@ -326,9 +271,6 @@ pmrpc = window.pmrpc = function(){
       // if an error happened, set the status and description and let waitForResponse handle the rest
       callObj.status = "error";
       callObj.description = statusObj.description;
-    } else if(statusObj.status === "processing") {
-      // if the destination started processing the request, set the status and let waitForResponse handle the rest
-      callObj.status = "processing";
     } else if(statusObj.status === "success") {
       // if this is the response, call the onSuccess handler
       delete callQueue[callId];

@@ -156,6 +156,8 @@ pmrpc = window.pmrpc = function(){
 			if (typeof id === "undefined"){
 				// a-ha! so we have ourselves a notification here!
 				service.procedure.apply(service.context, parameters);
+				// nothing to return here folks!
+				return null;
 			}
 			else {
 				try {
@@ -199,6 +201,17 @@ pmrpc = window.pmrpc = function(){
 		}
 	}
   }
+
+  // Process a JSON-RPC batch request. In the same
+  // order they are recived. Could be made paralel
+  // for speed increase.
+  function JSONRpcProcessRequestBatch(requests){
+  	var responses = Array();
+	for (var i = 0; i < responses.length; i++){
+		responses[i] = JSONRpcProcessRequest(requests[i]);
+	}
+	return responses;
+  }
   
   // dictionary of services registered for remote calls
   var registeredServices = {};
@@ -221,18 +234,28 @@ pmrpc = window.pmrpc = function(){
   function unregister(publicProcedureName) {
     delete registeredServices[publicProcedureName];
   }
+
+  // neatly explained in the name
+  function fetchRegisteredService(publicProcedureName){
+  	return registeredServices[publicProcedureName];
+  }
   
   // receive and execute a RPC call
   function dispatch(serviceCallEvent) {
 	response = JSONRpcProcessRequest(serviceCallEvent.data, serviceCallEvent.origin);
-	// return the response
-	callInternal({
-	"destination": serviceCallEvent.source,
-	"publicProcedureName": "recievePMRPCResponse",
-	"params", [response]
-	"retries", 1
-	"notification", true
-	});
+	// if there is a response
+	if ( response != null ){
+		var responseArray = new Array;
+		responseArray[0] = response;
+		// return the response
+		callInternal({
+		"destination": serviceCallEvent.source,
+		"publicProcedureName": "recievePMRPCResponse",
+		"params": responseArray,
+		"retries": 1,
+		"notification": true
+		});
+	}
   }
   
   // public call method
@@ -271,13 +294,14 @@ pmrpc = window.pmrpc = function(){
 
     callQueue[callObj.id] = callObj;
     if ( callObj.notification )
-    	callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params), callObj.destinationDomain);
+    	callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params)), callObj.destinationDomain);
     else
-    	callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params, callObj.callId), callObj.destinationDomain);
+    	callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params, callObj.callId)), callObj.destinationDomain);
   }
   
   // internal rpc service that receives responses for rpc calls 
   function recievePMRPCResponse(result) {
+ 	alert(result);	
   	// TODO: <<just this and were are complete>>
   }
   

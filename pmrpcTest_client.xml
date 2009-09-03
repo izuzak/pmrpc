@@ -108,14 +108,7 @@
         tests["test10"] = {testDescrition : "source domain unsupported through whitelist"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test10", 
           onSuccess : function(){testDone("test10", false, "unsupported source domain call FAIL");},
-          onError : function(statusObj){testDone("test10", true);}});  
-        
-        // test11 asynchronous function call 
-        tests["test11"] = {testDescrition : "asynchronous function call"};
-        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test11", 
-          onSuccess : function(){testDone("test11", true);},
-          onError : function(){testDone("test11", false, "asynchronous function call FAIL");}});  
-      }
+          onError : function(statusObj){testDone("test10", true);}});         
       
       _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});
  

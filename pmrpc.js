@@ -72,7 +72,7 @@ pmrpc = window.pmrpc = function(){
 	response.id = id;
 
 	// check to see if the error object is set
-	if (typeof error === "undefined") {
+	if (typeof error === "undefined" || error === null) {
 		// no errors, go with the payload
 		response.result = result;
 	}
@@ -122,9 +122,10 @@ pmrpc = window.pmrpc = function(){
   function JSONRpcProcessRequest(request, origin){
   	// decode arguments, fetch service name, call parameters, and call id
 	try {
-		var callArguments = decode(serviceCallEvent.data);
+		request = decode(request);
 	}
 	catch (error) {
+		
 		// JSON parsing failed, returning JSON-RPC error message -32700
 		// kind of wtf because we are not even certain it was json-rpc to begin with...		
 		// error object is first
@@ -137,7 +138,7 @@ pmrpc = window.pmrpc = function(){
 			);
 	}
 
-	if (callArguments.jsonrpc != "2.0") {
+	if (request.jsonrpc != "2.0") {
 		// Invalid JSON-RPC request		
 		return JSONRpcCreateResponseObject(
 			JSONRpcCreateErrorObject(-32600, "Invalid request", "The recived JSON is not a valid JSON-RPC 2.0 request"),
@@ -145,9 +146,12 @@ pmrpc = window.pmrpc = function(){
 			null
 			);
 	}
-
 	var id = request.id;
   	var service = fetchRegisteredService(request.method);
+	out = document.getElementById("ServerOutput");
+	if ( typeof out === "undefined" || out === null)
+		out = document.getElementById("Output");
+	out.innerHTML += request.id + " " + request.method + "<br/>";
 	if (typeof service !== "undefined"){
 		// So there is a service afterall...
           	// check the acl rights
@@ -155,13 +159,13 @@ pmrpc = window.pmrpc = function(){
 			// ok, go
 			if (typeof id === "undefined"){
 				// a-ha! so we have ourselves a notification here!
-				service.procedure.apply(service.context, parameters);
+				service.procedure.apply(service.context, request.params);
 				// nothing to return here folks!
 				return null;
 			}
 			else {
 				try {
-					returnValue = service.procedure.apply(service.context, parameters);
+					returnValue = service.procedure.apply(service.context, request.params);
 					return JSONRpcCreateResponseObject(null,
 						returnValue,
 						id
@@ -212,7 +216,7 @@ pmrpc = window.pmrpc = function(){
 	}
 	return responses;
   }
-  
+
   // dictionary of services registered for remote calls
   var registeredServices = {};
   // dictionary of requests being processed on the remote side
@@ -245,6 +249,10 @@ pmrpc = window.pmrpc = function(){
 	response = JSONRpcProcessRequest(serviceCallEvent.data, serviceCallEvent.origin);
 	// if there is a response
 	if ( response != null ){
+		out = document.getElementById("ServerOutput");
+		if ( typeof out === "undefined" || out === null)
+			out = document.getElementById("Output");
+		out.innerHTML += response.result + "|" + response.error +"<br/>"; 
 		var responseArray = new Array;
 		responseArray[0] = response;
 		// return the response
@@ -292,17 +300,56 @@ pmrpc = window.pmrpc = function(){
       notification : typeof config.notification !== "undefined" ? config.notification : false
     };
 
-    callQueue[callObj.id] = callObj;
-    if ( callObj.notification )
+    if ( callObj.notification ){
     	callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params)), callObj.destinationDomain);
-    else
+    }
+    else {
+	callQueue[callObj.id] = callObj;
     	callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params, callObj.callId)), callObj.destinationDomain);
+    }
   }
   
   // internal rpc service that receives responses for rpc calls 
   function recievePMRPCResponse(result) {
- 	alert(result);	
-  	// TODO: <<just this and were are complete>>
+  	out = document.getElementById("Output");
+	out.innerHTML += JSON.stringify(result) + "<br/>";
+
+	try {
+		result = decode(result);	
+	}
+	catch (error){
+		// Result parsing failed... well.. that sucks.
+		return;
+	}	
+
+	var id = result.id;
+	var call = callQueue[id];
+
+	if (typeof call === "undefined" || call === null){
+		// No such ID...
+		// Funny
+		return;
+	}
+
+	if (typeof result.result !== "undefined"){
+		delete callQueue[callId];
+		call.onSuccess( { 
+			"destination" : call.destination,
+			"publicProcedureName" : call.publicProcedureName,
+			"params" : call.params,
+			"status" : "success",
+			"returnValue" : result} );
+	}
+	else {
+		delete callQueue[callId];
+		call.onSuccess( { 
+			"destination" : call.destination,
+			"publicProcedureName" : call.publicProcedureName,
+			"params" : call.params,
+			"status" : "error",
+			"description" : result.error.message} );
+
+	}
   }
   
   // attach the pmrpc event listener

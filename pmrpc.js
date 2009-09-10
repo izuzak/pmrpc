@@ -74,6 +74,8 @@ pmrpc = window.pmrpc = function(){
 	// check to see if the error object is set
 	if (typeof error === "undefined" || error === null) {
 		// no errors, go with the payload
+		if (typeof result === "undefined")
+			result = null;
 		response.result = result;
 	}
 	else {
@@ -148,10 +150,7 @@ pmrpc = window.pmrpc = function(){
 	}
 	var id = request.id;
   	var service = fetchRegisteredService(request.method);
-	out = document.getElementById("ServerOutput");
-	if ( typeof out === "undefined" || out === null)
-		out = document.getElementById("Output");
-	out.innerHTML += request.id + " " + request.method + "<br/>";
+
 	if (typeof service !== "undefined"){
 		// So there is a service afterall...
           	// check the acl rights
@@ -249,10 +248,6 @@ pmrpc = window.pmrpc = function(){
 	response = JSONRpcProcessRequest(serviceCallEvent.data, serviceCallEvent.origin);
 	// if there is a response
 	if ( response != null ){
-		out = document.getElementById("ServerOutput");
-		if ( typeof out === "undefined" || out === null)
-			out = document.getElementById("Output");
-		out.innerHTML += response.result + "|" + response.error +"<br/>"; 
 		var responseArray = new Array;
 		responseArray[0] = response;
 		// return the response
@@ -304,25 +299,14 @@ pmrpc = window.pmrpc = function(){
     	callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params)), callObj.destinationDomain);
     }
     else {
-	callQueue[callObj.id] = callObj;
+	callQueue[callObj.callId] = callObj;	
     	callObj.destination.postMessage(encode(JSONRpcCreateRequestObject(callObj.publicProcedureName, callObj.params, callObj.callId)), callObj.destinationDomain);
     }
   }
   
   // internal rpc service that receives responses for rpc calls 
-  function recievePMRPCResponse(result) {
-  	out = document.getElementById("Output");
-	out.innerHTML += JSON.stringify(result) + "<br/>";
-
-	try {
-		result = decode(result);	
-	}
-	catch (error){
-		// Result parsing failed... well.. that sucks.
-		return;
-	}	
-
-	var id = result.id;
+  function recievePMRPCResponse(response) {
+	var id = response.id;
 	var call = callQueue[id];
 
 	if (typeof call === "undefined" || call === null){
@@ -331,24 +315,23 @@ pmrpc = window.pmrpc = function(){
 		return;
 	}
 
-	if (typeof result.result !== "undefined"){
-		delete callQueue[callId];
+	if (typeof response.result !== "undefined"){
+		delete callQueue[id];
 		call.onSuccess( { 
 			"destination" : call.destination,
 			"publicProcedureName" : call.publicProcedureName,
 			"params" : call.params,
 			"status" : "success",
-			"returnValue" : result} );
+			"returnValue" : response.result} );
 	}
 	else {
-		delete callQueue[callId];
-		call.onSuccess( { 
+		delete callQueue[id];
+		call.onError( { 
 			"destination" : call.destination,
 			"publicProcedureName" : call.publicProcedureName,
 			"params" : call.params,
 			"status" : "error",
-			"description" : result.error.message} );
-
+			"description" : response.error.message} );
 	}
   }
   

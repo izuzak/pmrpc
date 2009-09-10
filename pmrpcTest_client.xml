@@ -110,9 +110,9 @@
           onSuccess : function(){testDone("test10", false, "unsupported source domain call FAIL");},
           onError : function(statusObj){testDone("test10", true);}});         
       
-      _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});
 
 	}
+      _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});
 
     </script>
 

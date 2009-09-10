@@ -111,7 +111,9 @@
           onError : function(statusObj){testDone("test10", true);}});         
       
       _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});
- 
+
+	}
+
     </script>
 
   <div id="Output"></div>

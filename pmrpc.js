@@ -121,6 +121,41 @@ pmrpc = window.pmrpc = function(){
     return isWhitelisted && !isBlacklisted;
   }
 
+  // calls function fn with context self and parameters defined in dictionary namedParams
+  function callWithNamedArgs( fn, context, namedParams ) {
+	// get string representation of function
+	var fnDef = fn.toString();
+
+	// parse the string representation and retrieve order of parameters
+	var argNames = fnDef.substring(fnDef.indexOf("(")+1, fnDef.indexOf(")")).split(", ");
+	var argNamesArray = new Array;
+	if (argNames instanceof Array){
+		argNamesArray = argNames;
+	}
+	else {
+		// handle the defective one-parameter case
+		argNamesArray[0] = argNames;
+	}
+	var argIndexes = {};
+	for (var i=0; i<argNamesArray.length; i++) {
+		argIndexes[argNamesArray[i]] = i;
+	}
+
+	// construct an array of arguments from a dictionary
+	var callParameters = [];
+	for (paramName in namedParams) {
+		if (typeof argIndexes[paramName] !== "undefined") {
+			callParameters[argIndexes[paramName]] = namedParams[paramName];
+		}
+		else {
+			throw "No such param!";
+		}
+	}
+	// invoke function with specified context and arguments array
+	return fn.apply(context, callParameters);
+  }
+
+  // Process a single JSON-RPC Request
   function JSONRpcProcessRequest(request, origin){
   	// decode arguments, fetch service name, call parameters, and call id
 	try {
@@ -157,19 +192,47 @@ pmrpc = window.pmrpc = function(){
 	        if (checkACL(service.acl, origin)) {
 			// ok, go
 			if (typeof id === "undefined"){
-				// a-ha! so we have ourselves a notification here!
-				service.procedure.apply(service.context, request.params);
-				// nothing to return here folks!
-				return null;
+				try {
+					// a-ha! so we have ourselves a notification here!
+					if ( request.params instanceof Array ){
+						// positional
+						service.procedure.apply(service.context, request.params);
+					}
+					else {
+						// named					
+						callWithNamedArgs(service.procedure, service.context, request.params);
+					}
+					// nothing to return here folks!
+					return null;
+				}
+				catch (error){
+					// so, yeah, it was a notification, nobody cares it died
+					return null;
+				}
 			}
 			else {
 				try {
-					returnValue = service.procedure.apply(service.context, request.params);
+					var returnValue = null;
+					if ( request.params instanceof Array ){
+						// positional
+						returnValue = service.procedure.apply(service.context, request.params);
+					}
+					else {
+						// named
+						returnValue = callWithNamedArgs(service.procedure, service.context, request.params);
+					}
 					return JSONRpcCreateResponseObject(null,
 						returnValue,
 						id
 				);
 				} catch (error) {
+					if ( error == "No such param!" ) {
+						return JSONRpcCreateResponseObject(
+							JSONRpcCreateErrorObject(-32602, "Invalid params", error.description),
+							null,
+							id
+							);						
+					}						
 					// uh-oh
 					// the -1 value is "application defined" as far as JSON-RPC is considered
 					return JSONRpcCreateResponseObject(

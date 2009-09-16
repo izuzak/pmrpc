@@ -110,6 +110,29 @@
           onSuccess : function(){testDone("test10", false, "unsupported source domain call FAIL");},
           onError : function(statusObj){testDone("test10", true);}});         
       
+        // test11 - echo parameter through return value WITH NAMED PARAMETERS :D
+        tests["test11"] = {testDescrition : "echo parameter using named parameters"};
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test2", params : {"echo" : "hello!"}, 
+          onSuccess : function(returnObj){
+            if(returnObj.returnValue == "hello!") {
+              testDone("test11", true);
+            } else {
+              testDone("test11", false, "parameter passing or return values passing FAIL (named parameters were used)");
+            }
+          },
+          onError : function(statusObj){
+            tests.test2.status = false;
+            tests.test2.description = statusObj.description;}});
+
+        // test12 - echo parameter through return value WITH NAMED PARAMETERS, that are misspeled! :D
+        tests["test12"] = {testDescrition : "echo parameter using misspeled named parameters"};
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test2", params : {"eho" : "hello!"}, 
+          onSuccess : function(returnObj){
+              testDone("test12", false, "misspeled named parameters failed");
+          },
+          onError : function(statusObj){
+	      testDone("test12", true);
+          }});
 
 	}
       _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});

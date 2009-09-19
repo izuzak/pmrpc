@@ -152,6 +152,7 @@ pmrpc = window.pmrpc = function() {
   
   // Process a single JSON-RPC Request
   function processJSONRpcRequest(request, origin) {
+    console.log("processing " + JSON.stringify(request));
     if (request.jsonrpc !== "2.0") {
       // Invalid JSON-RPC request    
       return createJSONRpcResponseObject(
@@ -245,6 +246,7 @@ pmrpc = window.pmrpc = function() {
   
   // receive and execute a pmrpc call
   function processPmrpcMessage(serviceCallEvent) {
+    console.log("received");
     // if the message is not for pmrpc, ignore it.
     if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
       return;

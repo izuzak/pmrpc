@@ -87,10 +87,10 @@
           onError : function(statusObj){testDone("test6", false, "supported destination domain call FAIL");}});
 
         // test6 destinationDomain
-        tests["test7"] = {testDescrition : "destination domain unsupported"};
-        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test7", destinationDomain : "http://www.fail.com/", 
-          onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
-          onError : function(statusObj){testDone("test7", true);}});      
+        //tests["test7"] = {testDescrition : "destination domain unsupported"};
+        //pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test7", destinationDomain : "http://www.fail.com/", 
+        //  onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
+        //  onError : function(statusObj){testDone("test7", true);}});      
         
         // test8 acl supported
         tests["test8"] = {testDescrition : "source domain supported"};

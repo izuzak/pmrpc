@@ -152,7 +152,6 @@ pmrpc = window.pmrpc = function() {
   
   // Process a single JSON-RPC Request
   function processJSONRpcRequest(request, origin) {
-    console.log("processing " + JSON.stringify(request));
     if (request.jsonrpc !== "2.0") {
       // Invalid JSON-RPC request    
       return createJSONRpcResponseObject(
@@ -172,7 +171,6 @@ pmrpc = window.pmrpc = function() {
         try {
           var returnValue = 
             invokeProcedure(service.procedure, service.context, request.params);
-          console.log("after call ");
           return (typeof id === "undefined") ? null : 
             createJSONRpcResponseObject(null, returnValue, id);
         } catch (error) {
@@ -246,7 +244,6 @@ pmrpc = window.pmrpc = function() {
   
   // receive and execute a pmrpc call
   function processPmrpcMessage(serviceCallEvent) {
-    console.log("received");
     // if the message is not for pmrpc, ignore it.
     if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
       return;
@@ -320,13 +317,11 @@ pmrpc = window.pmrpc = function() {
   function sendPmrpcMessage(destination, message, destinationDomain) {
     destinationDomain = 
       typeof destinationDomain !== "undefined" ? destinationDomain : "*";
-    console.log("Sending message:" + JSON.stringify(message));
     return destination.postMessage(encode(message), destinationDomain);
   }
   
   // internal rpc service that receives responses for rpc calls 
   function processPmrpcResponse(response, origin) {
-    console.log(JSON.stringify(response)+"processPmrpcResponse");
     var id = response.id;
     var call = callQueue[id];
     if (typeof call === "undefined" || call === null) {
@@ -335,9 +330,7 @@ pmrpc = window.pmrpc = function() {
       delete callQueue[id];
     }
     
-    console.log("processPmrpcResponse1");
     if (typeof response.error === "undefined") {
-      console.log("processPmrpcResponse2");
       call.onSuccess( { 
         "destination" : call.destination,
         "publicProcedureName" : call.publicProcedureName,

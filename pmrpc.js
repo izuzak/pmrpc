@@ -128,26 +128,16 @@ pmrpc = window.pmrpc = function(){
 
 	// parse the string representation and retrieve order of parameters
 	var argNames = fnDef.substring(fnDef.indexOf("(")+1, fnDef.indexOf(")")).split(", ");
-	var argNamesArray = new Array;
 
-	if (argNames instanceof Array){
-		// handle 2 or more params
-		argNamesArray = argNames;
-	}
-	else {
-		if ( argNames == "" ){
-			// there are in fact NO params what so ever
-			// we don't like that kind here
-			throw "No such param!";
-		}
-		// handle the defective one-parameter case
-		argNamesArray[0] = argNames;
+	if ( argNames[0] == "" ){
+		// no-param function
+		throw "No such param!";
 	}
 
 	// indexify it
 	var argIndexes = {};
-	for (var i=0; i<argNamesArray.length; i++) {
-		argIndexes[argNamesArray[i]] = i;
+	for (var i=0; i<argNames.length; i++) {
+		argIndexes[argNames[i]] = i;
 	}
 
 	// construct an array of arguments from a dictionary

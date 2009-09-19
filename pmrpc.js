@@ -335,7 +335,7 @@ pmrpc = window.pmrpc = function() {
       delete callQueue[id];
     }
 
-    if (typeof response.result !== "undefined") {
+    if (typeof response.error === "undefined") {
       call.onSuccess( { 
         "destination" : call.destination,
         "publicProcedureName" : call.publicProcedureName,

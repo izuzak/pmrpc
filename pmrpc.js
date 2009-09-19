@@ -348,6 +348,7 @@ pmrpc = window.pmrpc = function() {
         "status" : "error",
         "description" : response.error.message} );
     }
+    console.log(response+"");
   }
   
   // attach the pmrpc event listener

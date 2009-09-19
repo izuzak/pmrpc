@@ -318,15 +318,15 @@ pmrpc = window.pmrpc = function() {
   function sendPmrpcMessage(destination, message, destinationDomain) {
     destinationDomain = 
       typeof destinationDomain !== "undefined" ? destinationDomain : "*";
-    console.log("Sending message:" + message);
+    console.log("Sending message:" + JSON.stringify(message));
     return destination.postMessage(encode(message), destinationDomain);
   }
   
   // internal rpc service that receives responses for rpc calls 
   function processPmrpcResponse(response, origin) {
+    console.log(JSON.stringify(response)+"processPmrpcResponse");
     var id = response.id;
     var call = callQueue[id];
-
     if (typeof call === "undefined" || call === null) {
       return;
     } else {
@@ -348,7 +348,6 @@ pmrpc = window.pmrpc = function() {
         "status" : "error",
         "description" : response.error.message} );
     }
-    console.log(response+"");
   }
   
   // attach the pmrpc event listener

@@ -172,7 +172,7 @@ pmrpc = window.pmrpc = function() {
         try {
           var returnValue = 
             invokeProcedure(service.procedure, service.context, request.params);
-          
+          console.log("after call ");
           return (typeof id === "undefined") ? null : 
             createJSONRpcResponseObject(null, returnValue, id);
         } catch (error) {
@@ -298,8 +298,8 @@ pmrpc = window.pmrpc = function() {
       status : "requestNotSent"
     };
     
-    isNotification = typeof config.onError !== "undefined" ||
-                       typeof config.onError !== "undefined";
+    isNotification = typeof config.onError === "undefined" &&
+                       typeof config.onError === "undefined";
     params = (typeof config.params !== "undefined") ? config.params : [];
     callId = generateUUID();
     

@@ -318,6 +318,7 @@ pmrpc = window.pmrpc = function() {
   function sendPmrpcMessage(destination, message, destinationDomain) {
     destinationDomain = 
       typeof destinationDomain !== "undefined" ? destinationDomain : "*";
+    console.log("Sending message:" + message);
     return destination.postMessage(encode(message), destinationDomain);
   }
   

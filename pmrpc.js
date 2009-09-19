@@ -307,7 +307,7 @@ pmrpc = window.pmrpc = function() {
       callObj.message = createJSONRpcRequestObject(
                   config.publicProcedureName, params);
     } else {
-      callQueue[callObj.callId] = callObj; 
+      callQueue[callId] = callObj; 
       callObj.message = createJSONRpcRequestObject(
                           config.publicProcedureName, params, callId);
     }
@@ -334,8 +334,10 @@ pmrpc = window.pmrpc = function() {
     } else {
       delete callQueue[id];
     }
-
+    
+    console.log("processPmrpcResponse1");
     if (typeof response.error === "undefined") {
+      console.log("processPmrpcResponse2");
       call.onSuccess( { 
         "destination" : call.destination,
         "publicProcedureName" : call.publicProcedureName,

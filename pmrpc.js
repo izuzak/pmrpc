@@ -310,7 +310,8 @@ pmrpc = window.pmrpc = function() {
                           config.publicProcedureName, params, callId);
     }
     
-    sendPmrpcMessage(destination, message, destinationDomain);
+    sendPmrpcMessage(
+      callObj.destination, callObj.message, callObj.destinationDomain);
   }
   
   // Use the postMessage API to send a pmrpc message to a destination

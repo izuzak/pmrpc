@@ -87,10 +87,10 @@
           onError : function(statusObj){testDone("test6", false, "supported destination domain call FAIL");}});
 
         // test7 destinationDomain unsupported
-        tests["test7"] = {testDescrition : "destination domain unsupported"};
+        tests["test7"] = {testDescrition : "destination domain unsupported - whitelist"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test7", destinationDomain : "http://www.fail.com/", 
           onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
-          onError : function(statusObj){testDone("test7", true);}});      
+          onError : function(statusObj){testDone("test7", true);}});
         
         // test8 acl supported
         tests["test8"] = {testDescrition : "source domain supported"};
@@ -123,7 +123,7 @@
           onError : function(statusObj){
             tests.test2.status = false;
             tests.test2.description = statusObj.description;}});
-
+        
         // test12 - echo parameter through return value WITH NAMED PARAMETERS, that are misspeled! :D
         tests["test12"] = {testDescrition : "echo parameter using misspeled named parameters"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test2", params : {"eho" : "hello!"}, 
@@ -133,7 +133,13 @@
           onError : function(statusObj){
 	      testDone("test12", true);
           }});
-
+        
+        // test13 destinationDomain unsupported
+        tests["test13"] = {testDescrition : "destination domain unsupported - blacklist"};
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test7", 
+          destinationDomain : { whitelist : "*", blacklist : "http://www.gmodules*", 
+          onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
+          onError : function(statusObj){testDone("test7", true);}});  
 	}
       _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});
 

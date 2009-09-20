@@ -24,6 +24,11 @@ pmrpc = window.pmrpc = function() {
     throw new Exception("pmrpc requires the JSON library");
   }
   
+  // check if postMessage API is available
+  if (typeof window.postMessage === "undefined") {
+    throw new Exception("pmrpc requires the HTML5 postMessage API");
+  }
+  
   // Generates a version 4 UUID
   function generateUUID() {
     var uuid = [], nineteen = "89AB", hex = "0123456789ABCDEF";
@@ -215,11 +220,10 @@ pmrpc = window.pmrpc = function() {
     if (request.jsonrpc !== "2.0") {
       // Invalid JSON-RPC request    
       return createJSONRpcResponseObject(
-        createJSONRpcErrorObject(-32600, "Invalid request", 
+        createJSONRpcErrorObject(-32600, "Invalid request.", 
           "The recived JSON is not a valid JSON-RPC 2.0 request."),
         null,
-        null
-      );
+        null);
     }
     
     var id = request.id;
@@ -242,38 +246,34 @@ pmrpc = window.pmrpc = function() {
           if (error === "No such param!") {
             return createJSONRpcResponseObject(
               createJSONRpcErrorObject(
-                -32602, "Invalid params", error.description),
+                -32602, "Invalid params.", error.description),
               null,
-              id
-            );            
+              id);            
           }            
           
-          // the -32001 value is "application defined"
+          // the -1 value is "application defined"
           return createJSONRpcResponseObject(
             createJSONRpcErrorObject(
-              -32098, "Server error.", error.description),
+              -1, "Application error.", error.description),
             null,
-            id
-          );
+            id);
         }
       } else {
         // access denied
         return (typeof id === "undefined") ? null : createJSONRpcResponseObject(
-          createJSONRpcErrorObject(-32099, "Server error", "Access denied"),
+          createJSONRpcErrorObject(-2, "Application error.", "Access denied on server."),
           null,
-          id
-        );
+          id);
       }
     } else {
       // No such method
       return (typeof id === "undefined") ? null : createJSONRpcResponseObject(
         createJSONRpcErrorObject(
           -32601,
-          "Method not found", 
-          "The requestd remote procedure does not exist or is not available"),
+          "Method not found.", 
+          "The requestd remote procedure does not exist or is not available."),
         null,
-        id
-      );
+        id);
     }
   }
   
@@ -314,8 +314,7 @@ pmrpc = window.pmrpc = function() {
   //             create a response
   //   timeout - number of miliseconds pmrpc will wait for any kind of answer
   //             before givnig up or retrying
-  //   destinationDoman - domain of the destination that should process the
-  //                      call
+  //   acl - access control list for the receiver of the message
   function call(config) {
     // check that number of retries is not -1, that is a special internal value
     if (config.retries && config.retries === -1) {
@@ -330,8 +329,7 @@ pmrpc = window.pmrpc = function() {
                     config.onError : function (){},
       retries : typeof config.retries !== "undefined" ? config.retries : 5,
       timeout : typeof config.timeout !== "undefined" ? config.timeout : 1000,
-      destinationDomain : typeof config.destinationDomain !== "undefined" ?
-                            config.destinationDomain : "*",
+      destinationDomain : config.destinationDomain,
       status : "requestNotSent"
     };
     
@@ -349,15 +347,35 @@ pmrpc = window.pmrpc = function() {
                           config.publicProcedureName, params, callId);
     }
     
-    sendPmrpcMessage(
-      callObj.destination, callObj.message, callObj.destinationDomain);
+    var result = sendPmrpcMessage(
+                   callObj.destination, 
+                   callObj.message, 
+                   callObj.destinationDomain);
+                   
+    if (result === "Pmrpc ACL error." && !isNotification) {
+      var response = createJSONRpcResponseObject(
+                      createJSONRpcErrorObject(
+                        -3, "Application error.", "Access denied on client."),
+                      null,
+                      callId); 
+      processJSONRpcResponse(response, origin);
+    }
   }
   
   // Use the postMessage API to send a pmrpc message to a destination
-  function sendPmrpcMessage(destination, message, destinationDomain) {
-    destinationDomain = 
-      typeof destinationDomain !== "undefined" ? destinationDomain : "*";
-    return destination.postMessage(encode(message), destinationDomain);
+  function sendPmrpcMessage(destination, message, acl) {
+    if (typeof acl === "undefined") {
+      acl = {whitelist: ["*"], blacklist: []};
+    } else if (typeof acl === "string") {
+      acl = {whitelist: [acl+"*"], blacklist: []};
+    } 
+    
+    var destinationOrigin = destination.location;
+    if (checkACL(acl, destinationOrigin)) {
+      return destination.postMessage(encode(message), "*");
+    } else {
+      return "Pmrpc ACL error.";
+    }
   }
   
   // attach the pmrpc event listener

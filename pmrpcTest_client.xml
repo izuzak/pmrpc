@@ -82,7 +82,7 @@
         
         // test6 destinationDomain supported
         tests["test6"] = {testDescrition : "destination domain supported"};
-        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test6", destinationDomain : "*", 
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test6", 
           onSuccess : function(){testDone("test6", true);},
           onError : function(statusObj){testDone("test6", false, "supported destination domain call FAIL");}});
 

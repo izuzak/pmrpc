@@ -358,7 +358,7 @@ pmrpc = window.pmrpc = function() {
                         -3, "Application error.", "Access denied on client."),
                       null,
                       callId); 
-      processJSONRpcResponse(response, origin);
+      processJSONRpcResponse(response, destination.location.toString());
     }
   }
   

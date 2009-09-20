@@ -137,10 +137,10 @@
         // test13 destinationDomain unsupported
         tests["test13"] = {testDescrition : "destination domain unsupported - blacklist"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test7", 
-          destinationDomain : { whitelist : "*", blacklist : "http://www.gmodules*", 
+          destinationDomain : { whitelist : "*", blacklist : "http://www.gmodules*" }, 
           onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
-          onError : function(statusObj){testDone("test7", true);}});  
-	}
+          onError : function(statusObj){testDone("test7", true);}});
+      }
       _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});
 
     </script>

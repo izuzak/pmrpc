@@ -370,7 +370,7 @@ pmrpc = window.pmrpc = function() {
       acl = {whitelist: [acl+"*"], blacklist: []};
     } 
     
-    var destinationOrigin = destination.location;
+    var destinationOrigin = destination.location.toString();
     if (checkACL(acl, destinationOrigin)) {
       return destination.postMessage(encode(message), "*");
     } else {

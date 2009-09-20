@@ -2,8 +2,19 @@
  * pmrpc 0.3 - Inter-widget remote procedure call library based on HTML5 
  *             postMessage API and JSON-RPC. http://code.google.com/p/pmrpc
  *
- * Copyright (c) 2009 Ivan Zuzak, Marko Ivankovic. 
- * Apache License, Version 2.0 - http://www.apache.org/licenses/LICENSE-2.0
+ * Copyright 2009 Ivan Zuzak, Marko Ivankovic
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 pmrpc = window.pmrpc = function() {
@@ -13,16 +24,6 @@ pmrpc = window.pmrpc = function() {
     throw new Exception("pmrpc requires the JSON library");
   }
   
-  // JSON encode an object into pmrpc message
-  function encode(obj) {
-    return "pmrpc." + JSON.stringify(obj);
-  }
-
-  // JSON decode a pmrpc message
-  function decode(str) {
-    return JSON.parse(str.substring("pmrpc.".length));
-  }
-
   // Generates a version 4 UUID
   function generateUUID() {
     var uuid = [], nineteen = "89AB", hex = "0123456789ABCDEF";
@@ -34,52 +35,7 @@ pmrpc = window.pmrpc = function() {
     uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
     return uuid.join('');
   }
-
-  // Creates a base JSON-RPC object, usable for both request and response.
-  // As of JSON-RPC 2.0 it only contains one field "jsonrpc" with value "2.0"
-  function createJSONRpcBaseObject() {
-    var call = {};
-    call.jsonrpc = "2.0";
-    return call;
-  }
-
-  // Creates a JSON-RPC request object for the given method and parameters
-  function createJSONRpcRequestObject(procedureName, parameters, id) {
-    var call = createJSONRpcBaseObject();
-    call.method = procedureName;
-    call.params = parameters;
-    if (typeof id !== "undefined") {
-      call.id = id;
-    }
-    return call;
-  }
-
-  // Creates a JSON-RPC error object complete with message and error code
-  function createJSONRpcErrorObject(errorcode, message, data) {
-    var error = {};
-    error.code = errorcode;
-    error.message = message;
-    error.data = data;
-    return error;
-  }
-
-  // Creates a JSON-RPC response object.
-  function createJSONRpcResponseObject(error, result, id) {
-    var response = createJSONRpcBaseObject();
-    response.id = id;
-    
-    // check to see if the error object is set
-    if (typeof error === "undefined" || error === null) {
-      // no errors, go with the payload
-      response.result = (result === "undefined") ? null : result;
-    } else {
-      // error response
-      response.error = error;
-    }
-    
-    return response;
-  } 
-
+  
   // Converts a wildcard expression into a regular expression
   function convertWildcardToRegex(wildcardExpression) {
     var regex = wildcardExpression.replace(
@@ -87,7 +43,7 @@ pmrpc = window.pmrpc = function() {
     regex = "^" + regex.replace("*", ".*") + "$";
     return regex;
   }
-
+  
   // Checks whether a domain satisfies the access control list. The access 
   // control list has a whitelist and a blacklist. In order to satisfy the acl, 
   // the domain must be on the whitelist, and must not be on the blacklist.
@@ -147,6 +103,110 @@ pmrpc = window.pmrpc = function() {
       
       // invoke function with specified context and arguments array
       return fn.apply(self, callParameters);
+    }
+  }
+  
+  // JSON encode an object into pmrpc message
+  function encode(obj) {
+    return "pmrpc." + JSON.stringify(obj);
+  }
+  
+  // JSON decode a pmrpc message
+  function decode(str) {
+    return JSON.parse(str.substring("pmrpc.".length));
+  }
+
+  // Creates a base JSON-RPC object, usable for both request and response.
+  // As of JSON-RPC 2.0 it only contains one field "jsonrpc" with value "2.0"
+  function createJSONRpcBaseObject() {
+    var call = {};
+    call.jsonrpc = "2.0";
+    return call;
+  }
+
+  // Creates a JSON-RPC request object for the given method and parameters
+  function createJSONRpcRequestObject(procedureName, parameters, id) {
+    var call = createJSONRpcBaseObject();
+    call.method = procedureName;
+    call.params = parameters;
+    if (typeof id !== "undefined") {
+      call.id = id;
+    }
+    return call;
+  }
+
+  // Creates a JSON-RPC error object complete with message and error code
+  function createJSONRpcErrorObject(errorcode, message, data) {
+    var error = {};
+    error.code = errorcode;
+    error.message = message;
+    error.data = data;
+    return error;
+  }
+
+  // Creates a JSON-RPC response object.
+  function createJSONRpcResponseObject(error, result, id) {
+    var response = createJSONRpcBaseObject();
+    response.id = id;
+    
+    // check to see if the error object is set
+    if (typeof error === "undefined" || error === null) {
+      // no errors, go with the payload
+      response.result = (result === "undefined") ? null : result;
+    } else {
+      // error response
+      response.error = error;
+    }
+    
+    return response;
+  }
+
+  // dictionary of services registered for remote calls
+  var registeredServices = {};
+  // dictionary of requests being processed on the client side
+  var callQueue = {};
+  
+  // register a service available for remote calls
+  // if no acl is given, assume that it is available to everyone
+  function register(config) {
+    registeredServices[config.publicProcedureName] = {
+      "procedure" : config.procedure,
+      "context" : config.procedure.context,
+      "isAsync" : typeof config.isAsynchronous !== "undefined" ?
+                    config.isAsynchronous : false,
+      "acl" : typeof config.acl !== "undefined" ? 
+                config.acl : {whitelist: ["*"], blacklist: []}};
+  }
+
+  // unregister a previously registered procedure
+  function unregister(publicProcedureName) {
+    delete registeredServices[publicProcedureName];
+  }
+
+  // retreive service for a specific procedure name
+  function fetchRegisteredService(publicProcedureName){
+    return registeredServices[publicProcedureName];
+  }
+  
+  // receive and execute a pmrpc call
+  function processPmrpcMessage(serviceCallEvent) {
+    // if the message is not for pmrpc, ignore it.
+    if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
+      return;
+    } else {
+      message = decode(serviceCallEvent.data);
+      
+      if (typeof message.method !== "undefined") {
+        response = processJSONRpcRequest(message, serviceCallEvent.origin);
+        // if there is a response
+        if (response !== null) {
+          // return the response
+          sendPmrpcMessage(
+            serviceCallEvent.source, response, serviceCallEvent.origin);
+        }
+      } else {
+        processJSONRpcResponse(message, serviceCallEvent.origin);
+      }
     }
   }
   
@@ -216,51 +276,31 @@ pmrpc = window.pmrpc = function() {
       );
     }
   }
-
-  // dictionary of services registered for remote calls
-  var registeredServices = {};
-  // dictionary of requests being processed on the client side
-  var callQueue = {};
   
-  // register a service available for remote calls
-  // if no acl is given, assume that it is available to everyone
-  function register(config) {
-    registeredServices[config.publicProcedureName] = {
-      "procedure" : config.procedure,
-      "context" : config.procedure.context,
-      "isAsync" : typeof config.isAsynchronous !== "undefined" ? config.isAsynchronous : false,
-      "acl" : typeof config.acl !== "undefined" ? config.acl : {whitelist: ["*"], blacklist: []}};
-  }
-
-  // unregister a previously registered procedure
-  function unregister(publicProcedureName) {
-    delete registeredServices[publicProcedureName];
-  }
-
-  // retreive service for a specific procedure name
-  function fetchRegisteredService(publicProcedureName){
-    return registeredServices[publicProcedureName];
-  }
-  
-  // receive and execute a pmrpc call
-  function processPmrpcMessage(serviceCallEvent) {
-    // if the message is not for pmrpc, ignore it.
-    if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
+  // internal rpc service that receives responses for rpc calls 
+  function processJSONRpcResponse(response, origin) {
+    var id = response.id;
+    var call = callQueue[id];
+    if (typeof call === "undefined" || call === null) {
       return;
     } else {
-      message = decode(serviceCallEvent.data);
-      
-      if (typeof message.method !== "undefined") {
-        response = processJSONRpcRequest(message, serviceCallEvent.origin);
-        // if there is a response
-        if (response !== null) {
-          // return the response
-          sendPmrpcMessage(
-            serviceCallEvent.source, response, serviceCallEvent.origin);
-        }
-      } else {
-        processPmrpcResponse(message, serviceCallEvent.origin);
-      }
+      delete callQueue[id];
+    }
+    
+    if (typeof response.error === "undefined") {
+      call.onSuccess( { 
+        "destination" : call.destination,
+        "publicProcedureName" : call.publicProcedureName,
+        "params" : call.params,
+        "status" : "success",
+        "returnValue" : response.result} );
+    } else {
+      call.onError( { 
+        "destination" : call.destination,
+        "publicProcedureName" : call.publicProcedureName,
+        "params" : call.params,
+        "status" : "error",
+        "description" : response.error.message} );
     }
   }
   
@@ -318,33 +358,6 @@ pmrpc = window.pmrpc = function() {
     destinationDomain = 
       typeof destinationDomain !== "undefined" ? destinationDomain : "*";
     return destination.postMessage(encode(message), destinationDomain);
-  }
-  
-  // internal rpc service that receives responses for rpc calls 
-  function processPmrpcResponse(response, origin) {
-    var id = response.id;
-    var call = callQueue[id];
-    if (typeof call === "undefined" || call === null) {
-      return;
-    } else {
-      delete callQueue[id];
-    }
-    
-    if (typeof response.error === "undefined") {
-      call.onSuccess( { 
-        "destination" : call.destination,
-        "publicProcedureName" : call.publicProcedureName,
-        "params" : call.params,
-        "status" : "success",
-        "returnValue" : response.result} );
-    } else {
-      call.onError( { 
-        "destination" : call.destination,
-        "publicProcedureName" : call.publicProcedureName,
-        "params" : call.params,
-        "status" : "error",
-        "description" : response.error.message} );
-    }
   }
   
   // attach the pmrpc event listener

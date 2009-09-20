@@ -1,0 +1,189 @@
+ <script src="http://www.json.org/json2.js" type="text/javascript"></script>
+    <script src="pmrpc.js" type="text/javascript"></script>
+
+	<input type="button" onClick="startTests();" value="Start tests"/>
+	<div id="Output"></div>
+
+    <script type="text/javascript">
+      
+      function output(debugText) {
+        var outputText = document.getElementById("Output").innerHTML;
+        document.getElementById("Output").innerHTML = outputText + "<p>" + debugText + "</p>";
+      }
+      
+      tests = {};
+      
+      function testDone(testId, status, description) {
+        text = tests[testId].testDescrition + ":\t\t";
+        text += status ? '<font color="green">completed successfully</font>' :
+          '<font color="red">' + description + '</font>';
+        output(text);
+      }
+      
+      function startTests() {
+        // check if browser is postMessage compatible
+        if (typeof window.postMessage === "undefined") {
+          output("Your browser doesn't support the HTML5 postMessage API.");
+          return;
+        }
+      	output("Starting test 13");
+        
+        // test2 - echo parameter through return value
+        tests["test13"] = {testDescrition : "echo parameter NAMED misspeled"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test2", params : {"eho": "hello!"}, 
+          onSuccess : function(returnObj){
+              testDone("test13", false, "Misspeled named parameter failed" + returnObj.returnValue);
+          },
+          onError : function(statusObj){
+              testDone("test13", true);         
+           }});
+
+      	output("Starting test 12");
+        
+        // test2 - echo parameter through return value
+        tests["test12"] = {testDescrition : "echo parameter NAMED"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test2", params : {"echo": "hello!"}, 
+          onSuccess : function(returnObj){
+            if(returnObj.returnValue == "hello!") {
+              testDone("test12", true);
+            } else {
+              testDone("test12", false, "parameter passing or return values passing FAIL" + returnObj.returnValue);
+            }
+          },
+          onError : function(statusObj){
+            tests.test12.status = false;
+            tests.test12.description = statusObj.description;}});
+	  return;
+      
+      	output("Starting test 2");
+        
+        // test2 - echo parameter through return value
+        tests["test2"] = {testDescrition : "echo parameter"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test2", params : ["hello!"], 
+          onSuccess : function(returnObj){
+            if(returnObj.returnValue == "hello!") {
+              testDone("test2", true);
+            } else {
+              testDone("test2", false, "parameter passing or return values passing FAIL" + returnObj.returnValue);
+            }
+          },
+          onError : function(statusObj){
+            tests.test2.status = false;
+            tests.test2.description = statusObj.description;}});
+
+
+
+      	output("Starting test 1");
+
+        // test1 - default, no return value
+        tests["test1"] = {testDescrition : "normal call"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test1", 
+          onSuccess : function(){testDone("test1", true);},
+          onError : function(statusObj){testDone("test1", false, statusObj.description);}});
+
+
+      	output("Starting test 3");
+            
+        // test3 - 0 retries
+        tests["test3"] = {testDescrition : "no retries call"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test3", retries : "0", 
+          onSuccess : function(){testDone("test3", true);},
+          onError : function(statusObj){testDone("test3", false, statusObj.description);}});
+
+      	output("Starting test 4");
+          
+        // test4 - unregistered procedure call
+        tests["test4"] = {testDescrition : "unregistered procedure call"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test4", 
+          onSuccess : function(){testDone("test4", false, "unregistered procedure called! FAIL");},
+          onError : function(statusObj){testDone("test4", true);}});
+
+      	output("Starting test 5");
+        
+        // test5 - do not destroy non-pmrpc messages
+        tests["test5"] = {testDescrition : "non-pmrpc call"};
+        function test5(evt) {
+          if(evt.data=="hello5!") { 
+            testDone("test5", true);
+            if (window.removeEventListener) {
+              window.removeEventListener("message", test5, false);
+            } else {
+              window.detachEvent("onmessage", test5);
+            }
+          }
+        }
+        if (window.addEventListener) {
+          window.addEventListener("message", test5, false);
+        } else {
+          window.attachEvent("onmessage", test5);
+        }
+        window.postMessage("hello5!", "*");
+
+      	output("Starting test 6");
+        
+        // test6 destinationDomain supported
+        tests["test6"] = {testDescrition : "destination domain supported"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test6", destinationDomain : "*", 
+          onSuccess : function(){testDone("test6", true);},
+          onError : function(statusObj){testDone("test6", false, "supported destination domain call FAIL");}});
+
+      	output("Starting test 7");
+
+        // test6 destinationDomain
+        tests["test7"] = {testDescrition : "destination domain unsupported"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test7", destinationDomain : "http://www.fail.com/", 
+          onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
+          onError : function(statusObj){testDone("test7", true);}});      
+
+      	output("Starting test 8");
+        
+        // test8 acl supported
+        tests["test8"] = {testDescrition : "source domain supported"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test8", 
+          onSuccess : function(statusObj){testDone("test8", true);},
+          onError : function(){testDone("test8", false, "supported source domain call FAIL");}});      
+
+      	output("Starting test 9");
+        
+        // test9 acl unsupported - blacklist fail
+        tests["test9"] = {testDescrition : "source domain unsupported through blacklist"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test9", 
+          onSuccess : function(){testDone("test9", false, "unsupported source domain call FAIL");},
+          onError : function(statusObj){testDone("test9", true);}});      
+
+      	output("Starting test 10");
+          
+        // test10 acl unsupported - whitelist fail
+        tests["test10"] = {testDescrition : "source domain unsupported through whitelist"};
+        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test10", 
+          onSuccess : function(){testDone("test10", false, "unsupported source domain call FAIL");},
+          onError : function(statusObj){testDone("test10", true);}});         
+
+	// test11 batch call
+	/*
+        tests["test11"] = {testDescrition : "batch call"};
+        pmrpc.call([{destination : window.parent.frames[0], publicProcedureName : "test2", params : ["hello!"], 
+          onSuccess : function(returnObj){
+            if(returnObj.returnValue == "hello!") {
+              testDone("test11-a", true);
+            } else {
+              testDone("test11-a", false, "parameter passing or return values passing FAIL" + returnObj.returnValue);
+            }
+          },
+          onError : function(statusObj){
+              testDone("test11-a", false, "parameter passing or return values passing FAIL" + returnObj.returnValue);
+            }},	   
+        {destination : window.parent.frames[0], publicProcedureName : "test2", params : ["hullo!"], 
+          onSuccess : function(returnObj){
+            if(returnObj.returnValue == "hullo!") {
+              testDone("test11-b", true);
+            } else {
+              testDone("test11-b", false, "parameter passing or return values passing FAIL" + returnObj.returnValue);
+            }
+          },
+          onError : function(statusObj){
+            testDone("test11-b", false, "parameter passing or return values passing FAIL" + returnObj.returnValue);
+            }}]);*/
+    } 
+    </script>
+

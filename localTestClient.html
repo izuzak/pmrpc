@@ -14,7 +14,7 @@
       tests = {};
       
       function testDone(testId, status, description) {
-        text = tests[testId].testDescrition + ":\t\t";
+        text = testId + " " + tests[testId].testDescrition + ":\t\t";
         text += status ? '<font color="green">completed successfully</font>' :
           '<font color="red">' + description + '</font>';
         output(text);
@@ -53,7 +53,6 @@
           onError : function(statusObj){
             tests.test12.status = false;
             tests.test12.description = statusObj.description;}});
-	  return;
       
       	output("Starting test 2");
         
@@ -70,9 +69,7 @@
           onError : function(statusObj){
             tests.test2.status = false;
             tests.test2.description = statusObj.description;}});
-
-
-
+            
       	output("Starting test 1");
 
         // test1 - default, no return value
@@ -80,7 +77,6 @@
         pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test1", 
           onSuccess : function(){testDone("test1", true);},
           onError : function(statusObj){testDone("test1", false, statusObj.description);}});
-
 
       	output("Starting test 3");
             
@@ -94,7 +90,7 @@
           
         // test4 - unregistered procedure call
         tests["test4"] = {testDescrition : "unregistered procedure call"};
-        pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test4", 
+         pmrpc.call({destination : window.parent.frames[0], publicProcedureName : "test4", 
           onSuccess : function(){testDone("test4", false, "unregistered procedure called! FAIL");},
           onError : function(statusObj){testDone("test4", true);}});
 

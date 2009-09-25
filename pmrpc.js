@@ -45,7 +45,7 @@ pmrpc = window.pmrpc = function() {
   function convertWildcardToRegex(wildcardExpression) {
     var regex = wildcardExpression.replace(
                   /([\^\$\.\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g, "\\$1");
-    regex = "^" + regex.replace("*", ".*") + "$";
+    regex = "^" + regex.replace(/\*/g, ".*") + "$";
     return regex;
   }
   
@@ -98,9 +98,9 @@ pmrpc = window.pmrpc = function() {
       
       // construct an array of arguments from a dictionary
       var callParameters = [];
-      for (var paramName in namedParams) {
+      for (var paramName in params) {
         if (typeof argIndexes[paramName] !== "undefined") {
-          callParameters[argIndexes[paramName]] = namedParams[paramName];
+          callParameters[argIndexes[paramName]] = params[paramName];
         } else {
           throw "No such param!";
         }
@@ -200,7 +200,6 @@ pmrpc = window.pmrpc = function() {
       return;
     } else {
       message = decode(serviceCallEvent.data);
-      
       if (typeof message.method !== "undefined") {
         response = processJSONRpcRequest(message, serviceCallEvent.origin);
         // if there is a response
@@ -261,7 +260,8 @@ pmrpc = window.pmrpc = function() {
       } else {
         // access denied
         return (typeof id === "undefined") ? null : createJSONRpcResponseObject(
-          createJSONRpcErrorObject(-2, "Application error.", "Access denied on server."),
+          createJSONRpcErrorObject(
+            -2, "Application error.", "Access denied on server."),
           null,
           id);
       }
@@ -280,25 +280,25 @@ pmrpc = window.pmrpc = function() {
   // internal rpc service that receives responses for rpc calls 
   function processJSONRpcResponse(response, origin) {
     var id = response.id;
-    var call = callQueue[id];
-    if (typeof call === "undefined" || call === null) {
+    var callObj = callQueue[id];
+    if (typeof callObj === "undefined" || callObj === null) {
       return;
     } else {
       delete callQueue[id];
     }
     
     if (typeof response.error === "undefined") {
-      call.onSuccess( { 
-        "destination" : call.destination,
-        "publicProcedureName" : call.publicProcedureName,
-        "params" : call.params,
+      callObj.onSuccess( { 
+        "destination" : callObj.destination,
+        "publicProcedureName" : callObj.publicProcedureName,
+        "params" : callObj.params,
         "status" : "success",
         "returnValue" : response.result} );
     } else {
-      call.onError( { 
-        "destination" : call.destination,
-        "publicProcedureName" : call.publicProcedureName,
-        "params" : call.params,
+      callObj.onError( { 
+        "destination" : callObj.destination,
+        "publicProcedureName" : callObj.publicProcedureName,
+        "params" : callObj.params,
         "status" : "error",
         "description" : response.error.message} );
     }
@@ -308,8 +308,8 @@ pmrpc = window.pmrpc = function() {
   //   destination - window on which the procedure is registered
   //   publicProcedureName - name under which the procedure is registered
   //   params - array of parameters fir the procedure call
-  //   onSuccess - procedure which will be called if the rpc call was successful
-  //   onError - procedure which will be called if the rpc call was not successful
+  //   onSuccess - procedure to be called if the rpc call was successful
+  //   onError - procedure to be called if the rpc call wasn't successful
   //   retries - number of retries pmrpc will attempt if previous calls do not
   //             create a response
   //   timeout - number of miliseconds pmrpc will wait for any kind of answer
@@ -323,6 +323,7 @@ pmrpc = window.pmrpc = function() {
 
     var callObj = {
       destination : config.destination,
+      publicProcedureName : config.publicProcedureName,
       onSuccess : typeof config.onSuccess !== "undefined" ? 
                     config.onSuccess : function (){},
       onError : typeof config.onError !== "undefined" ? 
@@ -334,32 +335,20 @@ pmrpc = window.pmrpc = function() {
     };
     
     isNotification = typeof config.onError === "undefined" &&
-                       typeof config.onError === "undefined";
+                       typeof config.onSuccess === "undefined";
     params = (typeof config.params !== "undefined") ? config.params : [];
     callId = generateUUID();
+    callQueue[callId] = callObj; 
     
     if (isNotification) {
       callObj.message = createJSONRpcRequestObject(
                   config.publicProcedureName, params);
     } else {
-      callQueue[callId] = callObj; 
       callObj.message = createJSONRpcRequestObject(
                           config.publicProcedureName, params, callId);
     }
     
-    var result = sendPmrpcMessage(
-                   callObj.destination, 
-                   callObj.message, 
-                   callObj.destinationDomain);
-                   
-    if (result === "Pmrpc ACL error." && !isNotification) {
-      var response = createJSONRpcResponseObject(
-                      createJSONRpcErrorObject(
-                        -3, "Application error.", "Access denied on client."),
-                      null,
-                      callId); 
-      processJSONRpcResponse(response, config.destination.location.toString());
-    }
+    waitAndSentRequest(callId);
   }
   
   // Use the postMessage API to send a pmrpc message to a destination
@@ -378,6 +367,76 @@ pmrpc = window.pmrpc = function() {
     }
   }
   
+  function waitAndSentRequest(callId) {
+    var callObj = callQueue[callId];
+    
+    // not sent - pinging - not available - available - sent
+    // if the call was processed or is being processed, stop sending requests
+    if (typeof callObj === "undefined" || callObj.status === "requestSent") {
+      return;
+    } else if (callObj.retries === 0 || callObj.status === "available") {
+      callObj.status = "requestSent";
+      callObj.retries = -1;
+      callQueue[callId] = callObj;
+      
+      var result = sendPmrpcMessage(
+                     callObj.destination, 
+                     callObj.message, 
+                     callObj.destinationDomain);
+                 
+      if (result === "Pmrpc ACL error." && !isNotification) {
+
+        processJSONRpcResponse(
+          createJSONRpcResponseObject(
+            createJSONRpcErrorObject(
+              -3, 
+              "Application error.",
+              "Access denied on client."),
+            null,
+            callId),
+          callObj.destination.location.toString());
+      }
+      
+      window.setTimeout(function() { waitAndSentRequest(callId); }, callObj.timeout);
+    } else if (callObj.retries <= -1) {
+      delete callQueue[callId];
+
+      processJSONRpcResponse(
+        createJSONRpcResponseObject(
+          createJSONRpcErrorObject(
+          -4, "Application error.", "Destination unavailable."),
+          null,
+          callId),
+        callObj.destination.location.toString());
+    } else {
+      callObj.status = "pinging";
+      callObj.retries = callObj.retries - 1;
+      
+      call({
+        "destination" : callObj.destination,
+        "publicProcedureName" : "receivePingRequest",
+        "onSuccess" : function (callResult) {
+                        if (callResult.returnValue === true) {
+                          callQueue[callId].status = "available";
+                        }
+                      },
+        "params" : [callObj.publicProcedureName], 
+        "retries" : 0,
+        "destinationDomain" : callObj.destination.location.toString()});
+      callQueue[callId] = callObj;
+      window.setTimeout(function() { waitAndSentRequest(callId); }, callObj.timeout);
+    }
+  }
+  
+  function receivePingRequest(publicProcedureName) {
+    return typeof fetchRegisteredService(publicProcedureName) !== "undefined";
+  }
+  
+  // register method for receiving and returning pings
+  register({
+    "publicProcedureName" : "receivePingRequest",
+    "procedure" : receivePingRequest});
+ 
   // attach the pmrpc event listener
   if (window.addEventListener) {
     // FF

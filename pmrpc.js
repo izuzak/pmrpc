@@ -353,15 +353,16 @@ pmrpc = window.pmrpc = function() {
   
   // Use the postMessage API to send a pmrpc message to a destination
   function sendPmrpcMessage(destination, message, acl) {
+    var destinationOrigin = destination.location.toString();
+    
     if (typeof acl === "undefined") {
       acl = {whitelist: ["*"], blacklist: []};
     } else if (typeof acl === "string") {
       acl = {whitelist: [acl+"*"], blacklist: []};
     } 
     
-    var destinationOrigin = destination.location.toString();
     if (checkACL(acl, destinationOrigin)) {
-      return destination.postMessage(encode(message), "*");
+      return destination.postMessage(encode(message), destinationOrigin);
     } else {
       return "Pmrpc ACL error.";
     }

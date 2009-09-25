@@ -79,11 +79,8 @@ pmrpc = window.pmrpc = function() {
   }
   
   // Calls a function with either positional or named parameters
-  function invokeProcedure(fn, self, params) {
-    if (params instanceof Array) {
-      // positional parameters
-      return fn.apply(self, params);
-    } else {
+  function invokeProcedure(fn, self, params, additionalParams) {
+    if (!(params instanceof Array)) {
       // get string representation of function
       var fnDef = fn.toString();
       
@@ -106,9 +103,15 @@ pmrpc = window.pmrpc = function() {
         }
       }
       
-      // invoke function with specified context and arguments array
-      return fn.apply(self, callParameters);
+      params = callParameters;
     }
+    
+    if (typeof additionalParams !== "undefined") {
+      params = params.concat(additionalParams);
+    }
+    
+    // invoke function with specified context and arguments array
+    return fn.apply(self, params);
   }
   
   // JSON encode an object into pmrpc message
@@ -201,7 +204,7 @@ pmrpc = window.pmrpc = function() {
     } else {
       message = decode(serviceCallEvent.data);
       if (typeof message.method !== "undefined") {
-        response = processJSONRpcRequest(message, serviceCallEvent.origin);
+        response = processJSONRpcRequest(message, serviceCallEvent);
         // if there is a response
         if (response !== null) {
           // return the response
@@ -215,7 +218,7 @@ pmrpc = window.pmrpc = function() {
   }
   
   // Process a single JSON-RPC Request
-  function processJSONRpcRequest(request, origin) {
+  function processJSONRpcRequest(request, serviceCallEvent) {
     if (request.jsonrpc !== "2.0") {
       // Invalid JSON-RPC request    
       return createJSONRpcResponseObject(
@@ -230,15 +233,26 @@ pmrpc = window.pmrpc = function() {
     
     if (typeof service !== "undefined") {
       // check the acl rights
-      if (checkACL(service.acl, origin)) {
+      if (checkACL(service.acl, serviceCallEvent.origin)) {
         try {
-          var returnValue = 
-            invokeProcedure(service.procedure, service.context, request.params);
-          return (typeof id === "undefined") ? null : 
-            createJSONRpcResponseObject(null, returnValue, id);
+          if (service.isAsync) {
+            var cb = function (returnValue) {
+                       sendPmrpcMessage(
+                         serviceCallEvent.source,
+                         createJSONRpcResponseObject(null, returnValue, id),
+                         serviceCallEvent.origin);
+                     };
+            invokeProcedure(service.procedure, service.context, request.params, [cb]);
+            return null;
+          } else {
+            var returnValue = 
+              invokeProcedure(service.procedure, service.context, request.params);
+            return (typeof id === "undefined") ? null : 
+              createJSONRpcResponseObject(null, returnValue, id);
+          }
         } catch (error) {
           if (typeof id === "undefined") {
-            // it was a notification, nobody cares if it fails
+            // it was a notification nobody cares if it fails
             return null;
           }
           

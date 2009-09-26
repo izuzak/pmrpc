@@ -140,7 +140,7 @@
         
       	output("Starting test 12");
         
-        // test2 - echo parameter through return value
+        // test12 - echo parameter through return value
         tests["test12"] = {testDescrition : "echo parameter NAMED"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test12", params : {"echo": "hello!"}, 
           onSuccess : function(returnObj){
@@ -156,7 +156,7 @@
             
         output("Starting test 13");
         
-        // test2 - echo parameter through return value
+        // test13 - echo parameter through return value
         tests["test13"] = {testDescrition : "echo parameter NAMED misspeled"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test13", params : {"eho": "hello!"}, 
           onSuccess : function(returnObj){

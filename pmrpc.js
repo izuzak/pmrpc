@@ -79,6 +79,7 @@ pmrpc = window.pmrpc = function() {
   }
   
   // Calls a function with either positional or named parameters
+  // In either case, additionalParams will be appended to the end
   function invokeProcedure(fn, self, params, additionalParams) {
     if (!(params instanceof Array)) {
       // get string representation of function
@@ -106,6 +107,7 @@ pmrpc = window.pmrpc = function() {
       params = callParameters;
     }
     
+    // append additional parameters
     if (typeof additionalParams !== "undefined") {
       params = params.concat(additionalParams);
     }
@@ -196,7 +198,7 @@ pmrpc = window.pmrpc = function() {
     return registeredServices[publicProcedureName];
   }
   
-  // receive and execute a pmrpc call
+  // receive and execute a pmrpc call which may be a request or a response
   function processPmrpcMessage(serviceCallEvent) {
     // if the message is not for pmrpc, ignore it.
     if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
@@ -204,14 +206,15 @@ pmrpc = window.pmrpc = function() {
     } else {
       message = decode(serviceCallEvent.data);
       if (typeof message.method !== "undefined") {
+        // this is a request
         response = processJSONRpcRequest(message, serviceCallEvent);
-        // if there is a response
         if (response !== null) {
           // return the response
           sendPmrpcMessage(
             serviceCallEvent.source, response, serviceCallEvent.origin);
         }
       } else {
+        // this is a response
         processJSONRpcResponse(message, serviceCallEvent.origin);
       }
     }
@@ -236,17 +239,23 @@ pmrpc = window.pmrpc = function() {
       if (checkACL(service.acl, serviceCallEvent.origin)) {
         try {
           if (service.isAsync) {
+            // if the service is async, create a callback which the service
+            // must call in order to send a response back
             var cb = function (returnValue) {
                        sendPmrpcMessage(
                          serviceCallEvent.source,
                          createJSONRpcResponseObject(null, returnValue, id),
                          serviceCallEvent.origin);
                      };
-            invokeProcedure(service.procedure, service.context, request.params, [cb]);
+            invokeProcedure(
+              service.procedure, service.context, request.params, [cb]);
             return null;
           } else {
-            var returnValue = 
-              invokeProcedure(service.procedure, service.context, request.params);
+            // if the service is not async, just call it and return the value
+            var returnValue = invokeProcedure(
+                                service.procedure,
+                                service.context, 
+                                request.params);
             return (typeof id === "undefined") ? null : 
               createJSONRpcResponseObject(null, returnValue, id);
           }
@@ -301,6 +310,7 @@ pmrpc = window.pmrpc = function() {
       delete callQueue[id];
     }
     
+    // check if the call was sucessful or not
     if (typeof response.error === "undefined") {
       callObj.onSuccess( { 
         "destination" : callObj.destination,
@@ -382,14 +392,16 @@ pmrpc = window.pmrpc = function() {
     }
   }
   
+  // Execute a remote call by first pinging the destination and afterwards
+  // sending the request
   function waitAndSentRequest(callId) {
     var callObj = callQueue[callId];
     
-    // not sent - pinging - not available - available - sent
     // if the call was processed or is being processed, stop sending requests
     if (typeof callObj === "undefined" || callObj.status === "requestSent") {
       return;
     } else if (callObj.retries === 0 || callObj.status === "available") {
+      // if the destination is ready or this is the last ping try - send request
       callObj.status = "requestSent";
       callObj.retries = -1;
       callQueue[callId] = callObj;
@@ -414,6 +426,7 @@ pmrpc = window.pmrpc = function() {
       
       window.setTimeout(function() { waitAndSentRequest(callId); }, callObj.timeout);
     } else if (callObj.retries <= -1) {
+      // if we didnt receive a ping response - drop the request and report error
       delete callQueue[callId];
 
       processJSONRpcResponse(
@@ -424,6 +437,7 @@ pmrpc = window.pmrpc = function() {
           callId),
         callObj.destination.location.toString());
     } else {
+      // if we can ping some more - send a new ping request
       callObj.status = "pinging";
       callObj.retries = callObj.retries - 1;
       
@@ -443,6 +457,7 @@ pmrpc = window.pmrpc = function() {
     }
   }
   
+  // function that receives pings for methods and returns responses 
   function receivePingRequest(publicProcedureName) {
     return typeof fetchRegisteredService(publicProcedureName) !== "undefined";
   }

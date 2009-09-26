@@ -17,7 +17,7 @@
           return;
         }
         
-	output("Starting server");
+        output("Starting server");
 
         // test1
         pmrpc.register( {
@@ -85,7 +85,7 @@
           publicProcedureName : "test13", 
           procedure : function(echo) {return echo;} });
           
-        // test7
+        // test14
         pmrpc.register( {
           publicProcedureName : "test14", 
           procedure : function() {} });
@@ -96,7 +96,7 @@
           publicProcedureName : "test15", 
           procedure : function() {} }); }, 5000 );
 
-	output("Starting started");
+        output("Server started");
       }
     </script>
     

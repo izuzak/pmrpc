@@ -20,6 +20,8 @@
           return;
         }
         
+        output("Starting server");
+        
         // test1
         pmrpc.register( {
           publicProcedureName : "test1",
@@ -75,6 +77,29 @@
           procedure : function(cb) {
             var doSomeMath = 2;
             cb(doSomeMath); } } );
+            
+        // test12
+        pmrpc.register( {
+          publicProcedureName : "test12", 
+          procedure : function(echo) {return echo;} });
+          
+        // test13
+        pmrpc.register( {
+          publicProcedureName : "test13", 
+          procedure : function(echo) {return echo;} });
+          
+        // test14
+        pmrpc.register( {
+          publicProcedureName : "test14", 
+          procedure : function() {} });
+        
+        // test 15
+        window.setTimeout( function() {         
+          pmrpc.register( {
+          publicProcedureName : "test15", 
+          procedure : function() {} }); }, 5000 );
+          
+        output("Server started");
       }
     
     _IG_RegisterOnloadHandler(startIframe);

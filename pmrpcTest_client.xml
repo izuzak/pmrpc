@@ -29,11 +29,15 @@
           return;
         }
       
+      	output("Starting test 1");
+        
         // test1 - default, no return value
         tests["test1"] = {testDescrition : "normal call"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test1", 
           onSuccess : function(){testDone("test1", true);},
           onError : function(statusObj){testDone("test1", false, statusObj.description);}});
+        
+      	output("Starting test 2");
         
         // test2 - echo parameter through return value
         tests["test2"] = {testDescrition : "echo parameter"};
@@ -42,24 +46,30 @@
             if(returnObj.returnValue == "hello!") {
               testDone("test2", true);
             } else {
-              testDone("test2", false, "parameter passing or return values passing FAIL");
+              testDone("test2", false, "parameter passing or return values passing FAIL" + returnObj.returnValue);
             }
           },
           onError : function(statusObj){
             tests.test2.status = false;
             tests.test2.description = statusObj.description;}});
+        
+      	output("Starting test 3");
             
         // test3 - 0 retries
         tests["test3"] = {testDescrition : "no retries call"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test3", retries : "0", 
           onSuccess : function(){testDone("test3", true);},
           onError : function(statusObj){testDone("test3", false, statusObj.description);}});
+
+      	output("Starting test 4");
           
         // test4 - unregistered procedure call
         tests["test4"] = {testDescrition : "unregistered procedure call"};
-        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test4", 
+         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test4", 
           onSuccess : function(){testDone("test4", false, "unregistered procedure called! FAIL");},
           onError : function(statusObj){testDone("test4", true);}});
+
+      	output("Starting test 5");
         
         // test5 - do not destroy non-pmrpc messages
         tests["test5"] = {testDescrition : "non-pmrpc call"};
@@ -79,67 +89,100 @@
           window.attachEvent("onmessage", test5);
         }
         window.postMessage("hello5!", "*");
+
+      	output("Starting test 6");
         
         // test6 destinationDomain supported
         tests["test6"] = {testDescrition : "destination domain supported"};
-        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test6", 
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test6", destinationDomain : "*", 
           onSuccess : function(){testDone("test6", true);},
           onError : function(statusObj){testDone("test6", false, "supported destination domain call FAIL");}});
+
+      	output("Starting test 7");
 
         // test7 destinationDomain unsupported
         tests["test7"] = {testDescrition : "destination domain unsupported - whitelist"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test7", destinationDomain : "http://www.fail.com/", 
           onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
-          onError : function(statusObj){testDone("test7", true);}});
+          onError : function(statusObj){testDone("test7", true);}});  
+
+      	output("Starting test 8");
         
         // test8 acl supported
         tests["test8"] = {testDescrition : "source domain supported"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test8", 
           onSuccess : function(statusObj){testDone("test8", true);},
           onError : function(){testDone("test8", false, "supported source domain call FAIL");}});      
+
+      	output("Starting test 9");
         
         // test9 acl unsupported - blacklist fail
         tests["test9"] = {testDescrition : "source domain unsupported through blacklist"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test9", 
           onSuccess : function(){testDone("test9", false, "unsupported source domain call FAIL");},
           onError : function(statusObj){testDone("test9", true);}});      
+
+      	output("Starting test 10");
           
         // test10 acl unsupported - whitelist fail
         tests["test10"] = {testDescrition : "source domain unsupported through whitelist"};
         pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test10", 
           onSuccess : function(){testDone("test10", false, "unsupported source domain call FAIL");},
           onError : function(statusObj){testDone("test10", true);}});         
-      
-        // test11 - echo parameter through return value WITH NAMED PARAMETERS :D
-        tests["test11"] = {testDescrition : "echo parameter using named parameters"};
-        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test2", params : {"echo" : "hello!"}, 
+          
+        output("Starting test 11");
+          
+        // test11 asynchronous function call 
+        tests["test11"] = {testDescrition : "asynchronous function call"};
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test11", 
+          onSuccess : function(){testDone("test11", true);},
+          onError : function(){testDone("test11", false, "asynchronous function call FAIL");}}); 
+        
+      	output("Starting test 12");
+        
+        // test2 - echo parameter through return value
+        tests["test12"] = {testDescrition : "echo parameter NAMED"};
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test12", params : {"echo": "hello!"}, 
           onSuccess : function(returnObj){
             if(returnObj.returnValue == "hello!") {
-              testDone("test11", true);
+              testDone("test12", true);
             } else {
-              testDone("test11", false, "parameter passing or return values passing FAIL (named parameters were used)");
+              testDone("test12", false, "parameter passing or return values passing FAIL" + returnObj.returnValue);
             }
           },
           onError : function(statusObj){
-            tests.test2.status = false;
-            tests.test2.description = statusObj.description;}});
+            tests.test12.status = false;
+            tests.test12.description = statusObj.description;}});
+            
+        output("Starting test 13");
         
-        // test12 - echo parameter through return value WITH NAMED PARAMETERS, that are misspeled! :D
-        tests["test12"] = {testDescrition : "echo parameter using misspeled named parameters"};
-        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test2", params : {"eho" : "hello!"}, 
+        // test2 - echo parameter through return value
+        tests["test13"] = {testDescrition : "echo parameter NAMED misspeled"};
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test13", params : {"eho": "hello!"}, 
           onSuccess : function(returnObj){
-              testDone("test12", false, "misspeled named parameters failed");
+              testDone("test13", false, "Misspeled named parameter failed" + returnObj.returnValue);
           },
           onError : function(statusObj){
-	      testDone("test12", true);
-          }});
+              testDone("test13", true);         
+           }});
         
-        // test13 destinationDomain unsupported
-        tests["test13"] = {testDescrition : "destination domain unsupported - blacklist"};
-        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test7", 
+        output("Starting test 14");
+        
+        // test14 destinationDomain unsupported
+        tests["test14"] = {testDescrition : "destination domain unsupported - blacklist"};
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test14", 
           destinationDomain : { whitelist : "*", blacklist : "http://www.gmodules*" }, 
-          onSuccess : function(){testDone("test7", false, "unsupported destination domain call FAIL");},
-          onError : function(statusObj){testDone("test7", true);}});
+          onSuccess : function(){testDone("test14", false, "unsupported destination domain call FAIL");},
+          onError : function(statusObj){testDone("test14", true);}});
+          
+        output("Starting test 15");
+        
+        // test15 pinging
+        tests["test15"] = {testDescrition : "pinging"};
+        pmrpc.call({destination : window.parent.frames[1], publicProcedureName : "test15", 
+          retries : 10,
+          onError : function(){testDone("test15", false, "pinging FAIL");},
+          onSuccess : function(statusObj){testDone("test15", true);}});
       }
       _IG_RegisterOnloadHandler(function() {window.setTimeout(startTests,5000);});
 

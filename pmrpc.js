@@ -341,7 +341,7 @@ pmrpc = window.pmrpc = function() {
   //   acl - access control list for the receiver of the message
   function call(config) {
     // check that number of retries is not -1, that is a special internal value
-    if (config.retries && config.retries === -1) {
+    if (config.retries && config.retries < 0) {
       throw new Exception("number of retries must be 0 or higher");
     }
 

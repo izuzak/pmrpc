@@ -1,16 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Module>
-  <ModulePrefs title="Pmrpc Server" />
-  <Content type="html"><![CDATA[
-
     <script src="http://www.json.org/json2.js" type="text/javascript"></script>
-    <script src="http://pmrpc.googlecode.com/svn/branches/jsonrpcdev/pmrpc.js" type="text/javascript"></script>
+    <script src="pmrpc.js" type="text/javascript"></script>
+
+    <input type="button" onClick="startIframe();" value="Start server"/>
+    <div id="ServerOutput"></div>
 
     <script type="text/javascript">
-    
       function output(debugText) {
-        var outputText = document.getElementById("Output").innerHTML;
-        document.getElementById("Output").innerHTML = outputText + "<p>" + debugText + "</p>";
+        var outputText = document.getElementById("ServerOutput").innerHTML;
+        document.getElementById("ServerOutput").innerHTML = outputText + "<p>" + debugText + "</p>";
       }
     
       function startIframe() {
@@ -21,7 +18,7 @@
         }
         
         output("Starting server");
-        
+
         // test1
         pmrpc.register( {
           publicProcedureName : "test1",
@@ -98,14 +95,8 @@
           pmrpc.register( {
           publicProcedureName : "test15", 
           procedure : function() {} }); }, 5000 );
-          
+
         output("Server started");
       }
-    
-    _IG_RegisterOnloadHandler(startIframe);
-    
     </script>
     
-    <div id="Output"></div>
-  ]]></Content>
-</Module>

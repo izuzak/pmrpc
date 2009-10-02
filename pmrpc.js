@@ -1,37 +1,56 @@
 /*
- * pmrpc 0.2 - HTML5 postMessage based RPC library 
- * http://code.google.com/p/pmrpc
+ * pmrpc 0.3 - Inter-widget remote procedure call library based on HTML5 
+ *             postMessage API and JSON-RPC. http://code.google.com/p/pmrpc
  *
- * Copyright (c) 2008 Ivan Zuzak
- * GPL license
+ * Copyright 2009 Ivan Zuzak, Marko Ivankovic
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
-pmrpc = window.pmrpc = function(){
+pmrpc = window.pmrpc = function() {
   // check if JSON library is available
   if (typeof JSON === "undefined" || typeof JSON.stringify === "undefined" || 
       typeof JSON.parse === "undefined") {
     throw new Exception("pmrpc requires the JSON library");
   }
-   
-  // JSON encode an object into pmrpc message
-  function encode(obj){
-    return "pmrpc." + JSON.stringify(obj);
+  
+  // check if postMessage API is available
+  if (typeof window.postMessage === "undefined") {
+    throw new Exception("pmrpc requires the HTML5 postMessage API");
   }
-
-  // JSON decode a pmrpc message
-  function decode(str){
-    return JSON.parse(str.substring("pmrpc.".length));
+  
+  // Generates a version 4 UUID
+  function generateUUID() {
+    var uuid = [], nineteen = "89AB", hex = "0123456789ABCDEF";
+    for (var i=0; i<36; i++) {
+      uuid[i] = hex[Math.floor(Math.random() * 16)];
+    }
+    uuid[14] = '4';
+    uuid[19] = nineteen[Math.floor(Math.random() * 4)];
+    uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+    return uuid.join('');
   }
   
   // Converts a wildcard expression into a regular expression
   function convertWildcardToRegex(wildcardExpression) {
-    var regex = wildcardExpression.replace(/([\^\$\.\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g,"\\$1");
-    regex = "^" + regex.replace("*", ".*") + "$";
+    var regex = wildcardExpression.replace(
+                  /([\^\$\.\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g, "\\$1");
+    regex = "^" + regex.replace(/\*/g, ".*") + "$";
     return regex;
   }
-
-  // Checks whether a domain satisfies the access control list. 
-  // The access control list has a whitelist and a blacklist. In order to satisfy the acl, 
+  
+  // Checks whether a domain satisfies the access control list. The access 
+  // control list has a whitelist and a blacklist. In order to satisfy the acl, 
   // the domain must be on the whitelist, and must not be on the blacklist.
   function checkACL(accessControlList, origin) {
     var aclWhitelist = accessControlList.whitelist;
@@ -59,10 +78,101 @@ pmrpc = window.pmrpc = function(){
     return isWhitelisted && !isBlacklisted;
   }
   
+  // Calls a function with either positional or named parameters
+  // In either case, additionalParams will be appended to the end
+  function invokeProcedure(fn, self, params, additionalParams) {
+    if (!(params instanceof Array)) {
+      // get string representation of function
+      var fnDef = fn.toString();
+      
+      // parse the string representation and retrieve order of parameters
+      var argNames = fnDef.substring(fnDef.indexOf("(")+1, fnDef.indexOf(")"));
+      argNames = (argNames === "") ? [] : argNames.split(", ");
+      
+      var argIndexes = {};
+      for (var i=0; i<argNames.length; i++) {
+        argIndexes[argNames[i]] = i;
+      }
+      
+      // construct an array of arguments from a dictionary
+      var callParameters = [];
+      for (var paramName in params) {
+        if (typeof argIndexes[paramName] !== "undefined") {
+          callParameters[argIndexes[paramName]] = params[paramName];
+        } else {
+          throw "No such param!";
+        }
+      }
+      
+      params = callParameters;
+    }
+    
+    // append additional parameters
+    if (typeof additionalParams !== "undefined") {
+      params = params.concat(additionalParams);
+    }
+    
+    // invoke function with specified context and arguments array
+    return fn.apply(self, params);
+  }
+  
+  // JSON encode an object into pmrpc message
+  function encode(obj) {
+    return "pmrpc." + JSON.stringify(obj);
+  }
+  
+  // JSON decode a pmrpc message
+  function decode(str) {
+    return JSON.parse(str.substring("pmrpc.".length));
+  }
+
+  // Creates a base JSON-RPC object, usable for both request and response.
+  // As of JSON-RPC 2.0 it only contains one field "jsonrpc" with value "2.0"
+  function createJSONRpcBaseObject() {
+    var call = {};
+    call.jsonrpc = "2.0";
+    return call;
+  }
+
+  // Creates a JSON-RPC request object for the given method and parameters
+  function createJSONRpcRequestObject(procedureName, parameters, id) {
+    var call = createJSONRpcBaseObject();
+    call.method = procedureName;
+    call.params = parameters;
+    if (typeof id !== "undefined") {
+      call.id = id;
+    }
+    return call;
+  }
+
+  // Creates a JSON-RPC error object complete with message and error code
+  function createJSONRpcErrorObject(errorcode, message, data) {
+    var error = {};
+    error.code = errorcode;
+    error.message = message;
+    error.data = data;
+    return error;
+  }
+
+  // Creates a JSON-RPC response object.
+  function createJSONRpcResponseObject(error, result, id) {
+    var response = createJSONRpcBaseObject();
+    response.id = id;
+    
+    // check to see if the error object is set
+    if (typeof error === "undefined" || error === null) {
+      // no errors, go with the payload
+      response.result = (result === "undefined") ? null : result;
+    } else {
+      // error response
+      response.error = error;
+    }
+    
+    return response;
+  }
+
   // dictionary of services registered for remote calls
   var registeredServices = {};
-  // dictionary of requests being processed on the remote side
-  var requestsBeingProcessed = {};
   // dictionary of requests being processed on the client side
   var callQueue = {};
   
@@ -70,225 +180,301 @@ pmrpc = window.pmrpc = function(){
   // if no acl is given, assume that it is available to everyone
   function register(config) {
     registeredServices[config.publicProcedureName] = {
-      "procedure" : config.procedure, 
-      "isAsync" : typeof config.isAsynchronous !== "undefined" ? config.isAsynchronous : false,
-      "acl" : typeof config.acl !== "undefined" ? config.acl : {whitelist: ["*"], blacklist: []}};
+      "procedure" : config.procedure,
+      "context" : config.procedure.context,
+      "isAsync" : typeof config.isAsynchronous !== "undefined" ?
+                    config.isAsynchronous : false,
+      "acl" : typeof config.acl !== "undefined" ? 
+                config.acl : {whitelist: ["*"], blacklist: []}};
   }
 
   // unregister a previously registered procedure
   function unregister(publicProcedureName) {
     delete registeredServices[publicProcedureName];
   }
+
+  // retreive service for a specific procedure name
+  function fetchRegisteredService(publicProcedureName){
+    return registeredServices[publicProcedureName];
+  }
   
-  // receive and execute a RPC call
-  function dispatch(serviceCallEvent) {    
+  // receive and execute a pmrpc call which may be a request or a response
+  function processPmrpcMessage(serviceCallEvent) {
     // if the message is not for pmrpc, ignore it.
     if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
       return;
-    }
-    
-    // decode arguments, fetch service name, call parameters, and call id
-    var callArguments = decode(serviceCallEvent.data);
-    var service = registeredServices[callArguments.publicProcedureName];
-    var parameters = callArguments.params.concat([serviceCallEvent.source]);
-    var callId = callArguments.callId;
-    
-    // create a status object for sending reports to the sender
-    var statusObj = {};
-    statusObj.callId = callId;
-  
-    // check if service with specified name is registered
-    if (typeof service !== "undefined") {      
-      if (typeof callId === "undefined") {
-        // if there is no callId, then this is an internal call so just invoke the procedure
-        service.procedure.apply(null, parameters);
-      } else {
-        // if there is a callId, check if the request is already being processed
-        if (typeof requestsBeingProcessed[callId] === "undefined") {
-          // check the acl rights
-          if (checkACL(service.acl, serviceCallEvent.origin)) {  
-            // if the request is authorized, set internal flag for this callId, and send status update to sender
-            
-            requestsBeingProcessed[callId] = 1;
-            statusObj.status = "processing";
-            callInternal( {
-              "destination" : serviceCallEvent.source,
-              "publicProcedureName" : "receivePmrpcStatusUpdate",
-              "params" : [statusObj],
-              "retries" : -1 } );
-            
-            // invoke procedure, and expect exception 
-            
-            if (!service.isAsync) {
-              try {
-                statusObj.returnValue = service.procedure.apply(null, parameters);
-                statusObj.status = "success";
-              } catch (error) {
-                statusObj.status = "error";
-                statusObj.errorDescription = error.description;
-              }
-              // delete internal flag for this callId, and return results to sender
-              delete requestsBeingProcessed[callId];
-              callInternal( {
-                "destination" : serviceCallEvent.source,
-                "publicProcedureName" : "receivePmrpcStatusUpdate",
-                "params" : [statusObj],
-                "retries" : -1 } );
-            } else {
-              var cb = function (returnValue) {
-                statusObj.returnValue = returnValue;
-                statusObj.status = "success";
-                delete requestsBeingProcessed[callId];
-                callInternal( {
-                  "destination" : serviceCallEvent.source,
-                  "publicProcedureName" : "receivePmrpcStatusUpdate",
-                  "params" : [statusObj],
-                  "retries" : -1 } ); };
-              parameters.splice(parameters.length-1, 0, cb);
-              service.procedure.apply(null, parameters);
-            }
-          } else {
-            // if the call is not authorized, return error
-            statusObj.status = "error";
-            statusObj.description = "request not authorized";
-            callInternal( {
-              "destination" : serviceCallEvent.source,
-              "publicProcedureName" : "receivePmrpcStatusUpdate",
-              "params" : [statusObj],
-              "retries" : -1 } );
-          }
-        } else {
-          // if call with specified callId is already being processed, just ignore this message
-          return;
+    } else {
+      message = decode(serviceCallEvent.data);
+      if (typeof message.method !== "undefined") {
+        // this is a request
+        response = processJSONRpcRequest(message, serviceCallEvent);
+        if (response !== null) {
+          // return the response
+          sendPmrpcMessage(
+            serviceCallEvent.source, response, serviceCallEvent.origin);
         }
-      }
-    } else {
-      // if service with specified name is not registered, return error
-      statusObj.status = "error";
-      statusObj.description = "service not registered";
-      callInternal( {
-        "destination" : serviceCallEvent.source,
-        "publicProcedureName" : "receivePmrpcStatusUpdate",
-        "params" : [statusObj],
-        "retries" : -1 } );
-    }
-  }
-  
-  // public call method
-  function call(config) {
-    // check that number of retries is not -1, that is a special internal value
-    if (config.retries && config.retries === -1) {
-      throw new Exception("number of retries must be 0 or higher");
-    } 
-    callInternal(config);
-  }
-
-  // call remote method, with configuration:
-  //   destination - window on which the method is registered
-  //   publicProcedureName - name under which the method is registered
-  //   params - array of parameters fir the method call
-  //   onSuccess - method which will be called if the rpc call was successful
-  //   onError - method which will be called if the rpc call was not successful
-  //   retries - number of retries pmrpc will attpempt if previous calls were not successful
-  //   timeout - number of miliseconds pmrpc will wait for any kind of answer before givnig up or retrying
-  //   destinationDoman - domain of the destination that should process the call
-  function callInternal(config) {
-    var callObj = {
-      destination : config.destination,
-      publicProcedureName : config.publicProcedureName,
-      params : typeof config.params !== "undefined" ? config.params : [],
-      onSuccess : typeof config.onSuccess !== "undefined" ? config.onSuccess : function (){},
-      onError : typeof config.onError !== "undefined" ? config.onError : function (){},
-      retries : typeof config.retries !== "undefined" ? config.retries : 5,
-      timeout : typeof config.timeout !== "undefined" ? config.timeout : 1000,
-      destinationDomain : typeof config.destinationDomain !== "undefined" ? config.destinationDomain : "*",
-      callId : Math.random() + "" + Math.random(),
-      status : "requestNotSent"
-    };
-    
-    if (config.retries === -1) {
-      // if retries is -1, this is an internal status call
-      callObj.destination.postMessage(
-        encode({"publicProcedureName" : callObj.publicProcedureName, "params" : callObj.params}), 
-        callObj.destinationDomain);
-    } else {
-      // otherwise, its a normal call. create an entry and start the wait-for-response protocol
-      callQueue[callObj.callId] = callObj;
-      waitForResponse(callObj.callId);
-    }
-  }
-  
-  // periodically send requests, until all retries are exhausted
-  function waitForResponse(callId) {
-    var callObj = callQueue[callId];
-    
-    // if the call was processed or is being processed, stop sending requests
-    if (typeof callObj === "undefined" || callObj.status === "processing") {
-      return;
-    } else {
-      // if the retried the maximum number of times, give up and report an error
-      if (callObj.retries <= -1) {
-        delete callQueue[callId];
-        callObj.onError( { 
-          "destination" : callObj.destination,
-          "publicProcedureName" : callObj.publicProcedureName,
-          "params" : callObj.params,
-          "status" : "error",
-          "description" : callObj.status === "requestSent" ? "destination not responding" : callObj.description} );
       } else {
-        // if more retries are lest, send new request with same callId
-        callObj.status = "requestSent";
-        callObj.retries = callObj.retries - 1;
-        callObj.destination.postMessage(
-          encode({"publicProcedureName" : callObj.publicProcedureName, "params" : callObj.params, "callId" : callObj.callId}),
-          callObj.destinationDomain);
-        callQueue[callId] = callObj;
-        window.setTimeout(function() { waitForResponse(callId); }, callObj.timeout);
+        // this is a response
+        processJSONRpcResponse(message, serviceCallEvent.origin);
       }
     }
   }
   
-  // internal rpc service that receives status updates for rpc calls 
-  function receivePmrpcStatusUpdate(statusObj) {
-    var callId = statusObj.callId;
-    var callObj = callQueue[callId];
-    
-    if (!callObj) {
-      return;
+  // Process a single JSON-RPC Request
+  function processJSONRpcRequest(request, serviceCallEvent) {
+    if (request.jsonrpc !== "2.0") {
+      // Invalid JSON-RPC request    
+      return createJSONRpcResponseObject(
+        createJSONRpcErrorObject(-32600, "Invalid request.", 
+          "The recived JSON is not a valid JSON-RPC 2.0 request."),
+        null,
+        null);
     }
-
-    if (statusObj.status === "error") {
-      // if an error happened, set the status and description and let waitForResponse handle the rest
-      callObj.status = "error";
-      callObj.description = statusObj.description;
-    } else if(statusObj.status === "processing") {
-      // if the destination started processing the request, set the status and let waitForResponse handle the rest
-      callObj.status = "processing";
-    } else if(statusObj.status === "success") {
-      // if this is the response, call the onSuccess handler
-      delete callQueue[callId];
+    
+    var id = request.id;
+    var service = fetchRegisteredService(request.method);
+    
+    if (typeof service !== "undefined") {
+      // check the acl rights
+      if (checkACL(service.acl, serviceCallEvent.origin)) {
+        try {
+          if (service.isAsync) {
+            // if the service is async, create a callback which the service
+            // must call in order to send a response back
+            var cb = function (returnValue) {
+                       sendPmrpcMessage(
+                         serviceCallEvent.source,
+                         createJSONRpcResponseObject(null, returnValue, id),
+                         serviceCallEvent.origin);
+                     };
+            invokeProcedure(
+              service.procedure, service.context, request.params, [cb]);
+            return null;
+          } else {
+            // if the service is not async, just call it and return the value
+            var returnValue = invokeProcedure(
+                                service.procedure,
+                                service.context, 
+                                request.params);
+            return (typeof id === "undefined") ? null : 
+              createJSONRpcResponseObject(null, returnValue, id);
+          }
+        } catch (error) {
+          if (typeof id === "undefined") {
+            // it was a notification nobody cares if it fails
+            return null;
+          }
+          
+          if (error === "No such param!") {
+            return createJSONRpcResponseObject(
+              createJSONRpcErrorObject(
+                -32602, "Invalid params.", error.description),
+              null,
+              id);            
+          }            
+          
+          // the -1 value is "application defined"
+          return createJSONRpcResponseObject(
+            createJSONRpcErrorObject(
+              -1, "Application error.", error.description),
+            null,
+            id);
+        }
+      } else {
+        // access denied
+        return (typeof id === "undefined") ? null : createJSONRpcResponseObject(
+          createJSONRpcErrorObject(
+            -2, "Application error.", "Access denied on server."),
+          null,
+          id);
+      }
+    } else {
+      // No such method
+      return (typeof id === "undefined") ? null : createJSONRpcResponseObject(
+        createJSONRpcErrorObject(
+          -32601,
+          "Method not found.", 
+          "The requestd remote procedure does not exist or is not available."),
+        null,
+        id);
+    }
+  }
+  
+  // internal rpc service that receives responses for rpc calls 
+  function processJSONRpcResponse(response, origin) {
+    var id = response.id;
+    var callObj = callQueue[id];
+    if (typeof callObj === "undefined" || callObj === null) {
+      return;
+    } else {
+      delete callQueue[id];
+    }
+    
+    // check if the call was sucessful or not
+    if (typeof response.error === "undefined") {
       callObj.onSuccess( { 
         "destination" : callObj.destination,
         "publicProcedureName" : callObj.publicProcedureName,
         "params" : callObj.params,
         "status" : "success",
-        "returnValue" : statusObj.returnValue} );
+        "returnValue" : response.result} );
+    } else {
+      callObj.onError( { 
+        "destination" : callObj.destination,
+        "publicProcedureName" : callObj.publicProcedureName,
+        "params" : callObj.params,
+        "status" : "error",
+        "description" : response.error.message} );
     }
   }
   
+  // call remote procedure, with configuration:
+  //   destination - window on which the procedure is registered
+  //   publicProcedureName - name under which the procedure is registered
+  //   params - array of parameters fir the procedure call
+  //   onSuccess - procedure to be called if the rpc call was successful
+  //   onError - procedure to be called if the rpc call wasn't successful
+  //   retries - number of retries pmrpc will attempt if previous calls do not
+  //             create a response
+  //   timeout - number of miliseconds pmrpc will wait for any kind of answer
+  //             before givnig up or retrying
+  //   acl - access control list for the receiver of the message
+  function call(config) {
+    // check that number of retries is not -1, that is a special internal value
+    if (config.retries && config.retries < 0) {
+      throw new Exception("number of retries must be 0 or higher");
+    }
+
+    var callObj = {
+      destination : config.destination,
+      publicProcedureName : config.publicProcedureName,
+      onSuccess : typeof config.onSuccess !== "undefined" ? 
+                    config.onSuccess : function (){},
+      onError : typeof config.onError !== "undefined" ? 
+                    config.onError : function (){},
+      retries : typeof config.retries !== "undefined" ? config.retries : 5,
+      timeout : typeof config.timeout !== "undefined" ? config.timeout : 1000,
+      destinationDomain : config.destinationDomain,
+      status : "requestNotSent"
+    };
+    
+    isNotification = typeof config.onError === "undefined" &&
+                       typeof config.onSuccess === "undefined";
+    params = (typeof config.params !== "undefined") ? config.params : [];
+    callId = generateUUID();
+    callQueue[callId] = callObj; 
+    
+    if (isNotification) {
+      callObj.message = createJSONRpcRequestObject(
+                  config.publicProcedureName, params);
+    } else {
+      callObj.message = createJSONRpcRequestObject(
+                          config.publicProcedureName, params, callId);
+    }
+    
+    waitAndSentRequest(callId);
+  }
+  
+  // Use the postMessage API to send a pmrpc message to a destination
+  function sendPmrpcMessage(destination, message, acl) {
+    var destinationOrigin = destination.location.toString();
+    
+    if (typeof acl === "undefined") {
+      acl = {whitelist: ["*"], blacklist: []};
+    } else if (typeof acl === "string") {
+      acl = {whitelist: [acl+"*"], blacklist: []};
+    } 
+    
+    if (checkACL(acl, destinationOrigin)) {
+      return destination.postMessage(encode(message), destinationOrigin);
+    } else {
+      return "Pmrpc ACL error.";
+    }
+  }
+  
+  // Execute a remote call by first pinging the destination and afterwards
+  // sending the request
+  function waitAndSentRequest(callId) {
+    var callObj = callQueue[callId];
+    
+    // if the call was processed or is being processed, stop sending requests
+    if (typeof callObj === "undefined" || callObj.status === "requestSent") {
+      return;
+    } else if (callObj.retries === 0 || callObj.status === "available") {
+      // if the destination is ready or this is the last ping try - send request
+      callObj.status = "requestSent";
+      callObj.retries = -1;
+      callQueue[callId] = callObj;
+      
+      var result = sendPmrpcMessage(
+                     callObj.destination, 
+                     callObj.message, 
+                     callObj.destinationDomain);
+                 
+      if (result === "Pmrpc ACL error." && !isNotification) {
+
+        processJSONRpcResponse(
+          createJSONRpcResponseObject(
+            createJSONRpcErrorObject(
+              -3, 
+              "Application error.",
+              "Access denied on client."),
+            null,
+            callId),
+          callObj.destination.location.toString());
+      }
+      
+      window.setTimeout(function() { waitAndSentRequest(callId); }, callObj.timeout);
+    } else if (callObj.retries <= -1) {
+      // if we didnt receive a ping response - drop the request and report error
+      delete callQueue[callId];
+
+      processJSONRpcResponse(
+        createJSONRpcResponseObject(
+          createJSONRpcErrorObject(
+          -4, "Application error.", "Destination unavailable."),
+          null,
+          callId),
+        callObj.destination.location.toString());
+    } else {
+      // if we can ping some more - send a new ping request
+      callObj.status = "pinging";
+      callObj.retries = callObj.retries - 1;
+      
+      call({
+        "destination" : callObj.destination,
+        "publicProcedureName" : "receivePingRequest",
+        "onSuccess" : function (callResult) {
+                        if (callResult.returnValue === true) {
+                          callQueue[callId].status = "available";
+                        }
+                      },
+        "params" : [callObj.publicProcedureName], 
+        "retries" : 0,
+        "destinationDomain" : callObj.destination.location.toString()});
+      callQueue[callId] = callObj;
+      window.setTimeout(function() { waitAndSentRequest(callId); }, callObj.timeout);
+    }
+  }
+  
+  // function that receives pings for methods and returns responses 
+  function receivePingRequest(publicProcedureName) {
+    return typeof fetchRegisteredService(publicProcedureName) !== "undefined";
+  }
+  
+  // register method for receiving and returning pings
+  register({
+    "publicProcedureName" : "receivePingRequest",
+    "procedure" : receivePingRequest});
+ 
   // attach the pmrpc event listener
   if (window.addEventListener) {
     // FF
-    window.addEventListener("message", dispatch, false);
+    window.addEventListener("message", processPmrpcMessage, false);
   } else {
     // IE
-    window.attachEvent("onmessage", dispatch);
+    window.attachEvent("onmessage", processPmrpcMessage);
   }
-  
-  // register internal procedure for communication between pmrpc modules
-  register( {
-    publicProcedureName : "receivePmrpcStatusUpdate", 
-    procedure : receivePmrpcStatusUpdate } );
   
   // return public methods
   return {

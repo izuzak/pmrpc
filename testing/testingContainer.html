@@ -1,0 +1,322 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+  <title>Pmrpc Test Suite</title>
+  <!-- QUnit -->
+  <script type="text/javascript" src="http://github.com/jquery/qunit/raw/master/qunit/qunit.js"></script>
+  <link rel="stylesheet" href="http://github.com/jquery/qunit/raw/master/qunit/qunit.css" type="text/css" media="screen" />
+
+  <script type="text/javascript" src="../pmrpc.js"></script>
+  <script type="text/javascript">
+    function logger(text) {
+      if (typeof console !== "undefined" && typeof console.log !== "undefined") {
+        console.log(text);
+      }
+    }
+    
+    pmrpc.register({
+      publicProcedureName : "logger",
+      procedure : logger
+    });
+  </script>
+</head>
+<body>
+  <h1 id="qunit-header">Pmrpc Test Suite</h1>
+  <h2 id="qunit-banner"></h2>
+  <h2 id="qunit-userAgent"></h2>
+  <ol id="qunit-tests"></ol>
+  <div id="main"></div>
+  
+  <iframe id="testingCrossDocumentServer1" name="testingCrossDocumentServer2" src="http://pmrpc.googlecode.com/svn/trunk/testing/testingCrossDocumentServer.html" width="0" height="0" frameborder=0></iframe>
+  
+  <script type="text/javascript">
+    var testingCrossDocumentServer = window.frames[0];
+
+    module("Inter-window communication");
+    
+    test("Cross-document messaging API implemented", 1, function() {
+      var crossDocImplemented = typeof postMessage !== "undefined";
+      ok(crossDocImplemented, "Cross-document messaging API must be implemented.");
+    });
+    
+    asyncTest("Normal echo call", 1, function() {
+      var testingServerEchoMethod = "testingServerEchoMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethod, 
+        params : [testingEchoParameter],
+        onSuccess : function(result){
+          equals(result.returnValue, testingEchoParameter);
+          start(); },
+        onError : function(statusObj){
+          ok(false, statusObj.description);
+          start();}});    
+    });
+    
+    asyncTest("Retries", 1, function() {
+      var testingServerEchoMethodRetries = "testingServerEchoMethodRetries";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethodRetries, 
+        params : [testingEchoParameter],
+        retries : 10,
+        onSuccess : function(result) {
+          equals(result.returnValue, testingEchoParameter);
+          start(); },
+        onError : function(statusObj) {
+          ok(false, statusObj.description);
+          start();}});    
+    });
+    
+    asyncTest("0 retries call", 1, function() {
+      var testingServerEchoMethod = "testingServerEchoMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        retries : 0,
+        publicProcedureName : testingServerEchoMethod, 
+        params : [testingEchoParameter],
+        onSuccess : function(result){
+          equals(result.returnValue, testingEchoParameter);
+          start(); },
+        onError : function(statusObj){
+          ok(false, statusObj.description);
+          start();}});    
+    });
+    
+    asyncTest("Unregistered procedure call", 1, function() {
+      var testingServerUnregisteredMethod = "testingServerUnregisteredMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerUnregisteredMethod, 
+        params : [testingEchoParameter],
+        onSuccess : function(result){
+          ok(false);
+          start(); },
+        onError : function(statusObj){
+          ok(true);
+          start();}});    
+    });
+    
+    asyncTest("Non-pmrpc call", 1, function() {
+      var testingServerUnregisteredMethod = "testingServerUnregisteredMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      
+      function nonPmrpcTest(evt) {
+        equals(evt.data, testingEchoParameter);
+        if (window.removeEventListener) {
+          window.removeEventListener("message", nonPmrpcTest, false);
+        } else {
+          window.detachEvent("onmessage", nonPmrpcTest);
+        }
+        start();
+      }
+      
+      if (window.addEventListener) {
+        window.addEventListener("message", nonPmrpcTest, false);
+      } else {
+        window.attachEvent("onmessage", nonPmrpcTest);
+      }
+      window.postMessage(testingEchoParameter, "*");
+    });
+
+    asyncTest("Destination domain supported", 1, function() {
+      var testingServerEchoMethod = "testingServerEchoMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethod, 
+        params : [testingEchoParameter],
+        destinationDomain : "*",
+        onSuccess : function(result){
+          equals(result.returnValue, testingEchoParameter);
+          start(); },
+        onError : function(statusObj){
+          ok(false, statusObj.description);
+          start();}});    
+    });    
+
+    asyncTest("Destination domain unsupported through whitelist", 1, function() {
+      var testingServerEchoMethod = "testingServerEchoMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      stop(20000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethod, 
+        params : [testingEchoParameter],
+        destinationDomain : "http://www.fail.com",
+        onSuccess : function(result){
+          ok(false, "help!");
+          start(); },
+        onError : function(statusObj){
+          ok(true);
+          start();}});    
+    });
+    
+    asyncTest("Destination domain unsupported through blacklist", 1, function() {
+      var testingServerEchoMethod = "testingServerEchoMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      stop(20000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethod, 
+        params : [testingEchoParameter],
+        destinationDomain : { whitelist : "*", blacklist : "http://www.gmodules*" }, 
+        onSuccess : function(result){
+          ok(false, "help!");
+          start(); },
+        onError : function(statusObj){
+          ok(true);
+          start();}});    
+    });  
+    
+    asyncTest("Source domain unsupported through blacklist", 1, function() {
+      var testingServerEchoMethodUnsupportedBL = "testingServerEchoMethodUnsupportedBL";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethodUnsupportedBL, 
+        params : [testingEchoParameter],
+        onSuccess : function(result) {
+          ok(false);
+          start(); },
+        onError : function(statusObj) {
+          ok(true);
+          start();}});    
+    });      
+    
+    asyncTest("Source domain unsupported through whitelist", 1, function() {
+      var testingServerEchoMethodUnsupportedWL = "testingServerEchoMethodUnsupportedWL";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethodUnsupportedWL, 
+        params : [testingEchoParameter],
+        onSuccess : function(result) {
+          ok(false);
+          start(); },
+        onError : function(statusObj) {
+          ok(true);
+          start();}});    
+    });
+    
+    asyncTest("Asynchronous method", 1, function() {
+      var testingServerEchoMethodAsynchronous = "testingServerEchoMethodAsynchronous";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethodAsynchronous, 
+        params : [testingEchoParameter],
+        onSuccess : function(result) {
+          equals(result.returnValue, testingEchoParameter);
+          start(); },
+        onError : function(statusObj) {
+          ok(false, statusObj.description);
+          start();}});    
+    });
+    
+    asyncTest("Named parameters", 1, function() {
+      var testingServerEchoMethod = "testingServerEchoMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethod, 
+        params : { echo : testingEchoParameter },
+        onSuccess : function(result) {
+          equals(result.returnValue, testingEchoParameter);
+          start(); },
+        onError : function(statusObj) {
+          ok(false, statusObj.description);
+          start();}});    
+    });
+    
+    asyncTest("Mispelled named parameters", 1, function() {
+      var testingServerEchoMethod = "testingServerEchoMethod";
+      var testingEchoParameter = "testingEchoParameter";
+      
+      stop(10000);
+      pmrpc.call({
+        destination : testingCrossDocumentServer,
+        publicProcedureName : testingServerEchoMethod, 
+        params : { ech : testingEchoParameter },
+        onSuccess : function(result) {
+          ok(false);
+          start(); },
+        onError : function(statusObj) {
+          ok(true);
+          start();}});    
+    });
+    
+    // TODO: need test for timeouts
+    
+    module("Worker communication");
+    test("Worker API implemented", 1, function() {
+      var dedicatedWorkerImplemented = typeof nonPmrpcWorker !== "undefined";
+      ok(dedicatedWorkerImplemented, "Worker API must be implemented.");
+    });
+    
+    asyncTest("Container-to-worker echo", 1, function() {
+      var dedicatedWorkerEcho = "dedicatedWorkerEcho";
+      var dedicatedTestingWorker = new Worker("testingDedicatedWorker.js");
+      
+      stop(10000);
+      
+      pmrpc.call({
+        destination : dedicatedTestingWorker,
+        publicProcedureName : "pmrpcWorkerTester",
+        params : [dedicatedWorkerEcho],
+        onSuccess : function (result) {
+          equals(result.returnValue, dedicatedWorkerEcho);
+        },
+        onError : function (result) {
+          ok(false, result);
+        }
+      });
+        
+      function containerWorkerTest(testerParam) {
+        var dedicatedWorkerEcho = "dedicatedWorkerEcho";
+        equals(testerParam, dedicatedWorkerEcho);
+        start();
+        return testerParam;
+      }
+      pmrpc.register({
+        publicProcedureName : "containerWorkerTest",
+        procedure : containerWorkerTest
+      });
+    });
+    
+    /*
+    module("SharedWorker communication");
+    test("SharedWorker API implemented", 1, function() {
+      var sharedWorkerImplemented = typeof nonPmrpcSharedWorker !== "undefined";
+      ok(sharedWorkerImplemented, "SharedWorker API must be implemented.");
+    });
+    
+    module("Discovery");
+    */
+  </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 /*
- * pmrpc 0.3 - Inter-widget remote procedure call library based on HTML5 
+ * pmrpc 0.5 - Inter-widget remote procedure call library based on HTML5 
  *             postMessage API and JSON-RPC. http://code.google.com/p/pmrpc
  *
  * Copyright 2009 Ivan Zuzak, Marko Ivankovic
@@ -17,18 +17,19 @@
  * limitations under the License.
  */
 
-pmrpc = window.pmrpc = function() {
+pmrpc = self.pmrpc =  function() {
   // check if JSON library is available
   if (typeof JSON === "undefined" || typeof JSON.stringify === "undefined" || 
       typeof JSON.parse === "undefined") {
-    throw new Exception("pmrpc requires the JSON library");
+    throw "pmrpc requires the JSON library";
   }
   
-  // check if postMessage API is available
-  if (typeof window.postMessage === "undefined") {
-    throw new Exception("pmrpc requires the HTML5 postMessage API");
+  // check if postMessage APIs are available
+  if (typeof this.postMessage === "undefined" &&  // window or worker
+        typeof this.onconnect === "undefined") {  // shared worker
+      throw "pmrpc requires the HTML5 cross-document messaging and worker APIs";
   }
-  
+    
   // Generates a version 4 UUID
   function generateUUID() {
     var uuid = [], nineteen = "89AB", hex = "0123456789ABCDEF";
@@ -180,6 +181,7 @@ pmrpc = window.pmrpc = function() {
   // if no acl is given, assume that it is available to everyone
   function register(config) {
     registeredServices[config.publicProcedureName] = {
+      "publicProcedureName" : config.publicProcedureName,
       "procedure" : config.procedure,
       "context" : config.procedure.context,
       "isAsync" : typeof config.isAsynchronous !== "undefined" ?
@@ -199,23 +201,35 @@ pmrpc = window.pmrpc = function() {
   }
   
   // receive and execute a pmrpc call which may be a request or a response
-  function processPmrpcMessage(serviceCallEvent) {
+  function processPmrpcMessage(serviceCallEvent, eventSource) {
     // if the message is not for pmrpc, ignore it.
     if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
       return;
     } else {
       message = decode(serviceCallEvent.data);
+      
       if (typeof message.method !== "undefined") {
         // this is a request
-        response = processJSONRpcRequest(message, serviceCallEvent);
+        var newServiceCallEvent = {
+          data : serviceCallEvent.data,
+          source : typeof eventSource !== "undefined" ? eventSource.source : serviceCallEvent.source,
+          origin : typeof eventSource !== "undefined" ? eventSource.location : serviceCallEvent.origin
+        };
+        
+        response = processJSONRpcRequest(message, newServiceCallEvent);
+        // return the response
         if (response !== null) {
-          // return the response
-          sendPmrpcMessage(
-            serviceCallEvent.source, response, serviceCallEvent.origin);
+          if (message.method === "getDestinationOrigin") {
+            sendPmrpcMessage(
+              newServiceCallEvent.source, response, "*");
+          } else {
+            sendPmrpcMessage(
+              newServiceCallEvent.source, response, newServiceCallEvent.origin);
+          }
         }
       } else {
         // this is a response
-        processJSONRpcResponse(message, serviceCallEvent.origin);
+        processJSONRpcResponse(message);
       }
     }
   }
@@ -248,14 +262,14 @@ pmrpc = window.pmrpc = function() {
                          serviceCallEvent.origin);
                      };
             invokeProcedure(
-              service.procedure, service.context, request.params, [cb]);
+              service.procedure, service.context, request.params, [cb, serviceCallEvent]);
             return null;
           } else {
             // if the service is not async, just call it and return the value
             var returnValue = invokeProcedure(
                                 service.procedure,
                                 service.context, 
-                                request.params);
+                                request.params, [serviceCallEvent]);
             return (typeof id === "undefined") ? null : 
               createJSONRpcResponseObject(null, returnValue, id);
           }
@@ -301,7 +315,7 @@ pmrpc = window.pmrpc = function() {
   }
   
   // internal rpc service that receives responses for rpc calls 
-  function processJSONRpcResponse(response, origin) {
+  function processJSONRpcResponse(response) {
     var id = response.id;
     var callObj = callQueue[id];
     if (typeof callObj === "undefined" || callObj === null) {
@@ -324,7 +338,7 @@ pmrpc = window.pmrpc = function() {
         "publicProcedureName" : callObj.publicProcedureName,
         "params" : callObj.params,
         "status" : "error",
-        "description" : response.error.message} );
+        "description" : response.error.message + " " + response.error.data} );
     }
   }
   
@@ -344,7 +358,7 @@ pmrpc = window.pmrpc = function() {
     if (config.retries && config.retries < 0) {
       throw new Exception("number of retries must be 0 or higher");
     }
-
+    
     var callObj = {
       destination : config.destination,
       publicProcedureName : config.publicProcedureName,
@@ -353,7 +367,7 @@ pmrpc = window.pmrpc = function() {
       onError : typeof config.onError !== "undefined" ? 
                     config.onError : function (){},
       retries : typeof config.retries !== "undefined" ? config.retries : 5,
-      timeout : typeof config.timeout !== "undefined" ? config.timeout : 1000,
+      timeout : typeof config.timeout !== "undefined" ? config.timeout : 500,
       destinationDomain : config.destinationDomain,
       status : "requestNotSent"
     };
@@ -372,70 +386,89 @@ pmrpc = window.pmrpc = function() {
                           config.publicProcedureName, params, callId);
     }
     
-    waitAndSentRequest(callId);
+    waitAndSendRequest(callId);
   }
   
   // Use the postMessage API to send a pmrpc message to a destination
-  function sendPmrpcMessage(destination, message, acl) {
-    var destinationOrigin = destination.location.toString();
+  function sendPmrpcMessage(destination, message, acl, cbx) {
+    var cb = function(destinationOrigin) {
+      if (typeof destination === "undefined" || destination === null) {
+        self.postMessage(encode(message));
+      } else if (typeof destination.frames !== "undefined") {
+        if (typeof acl === "undefined") {
+          acl = {whitelist: ["*"], blacklist: []};
+        } else if (typeof acl === "string") {
+          acl = {whitelist: [acl+"*"], blacklist: []};
+        }
+        if (checkACL(acl, destinationOrigin)) {
+          return destination.postMessage(encode(message), destinationOrigin);
+        } else {
+          return "Pmrpc ACL error.";
+        }
+      } else {
+        destination.postMessage(encode(message));
+      }
+    };
     
-    if (typeof acl === "undefined") {
-      acl = {whitelist: ["*"], blacklist: []};
-    } else if (typeof acl === "string") {
-      acl = {whitelist: [acl+"*"], blacklist: []};
-    } 
-    
-    if (checkACL(acl, destinationOrigin)) {
-      return destination.postMessage(encode(message), destinationOrigin);
+    if (acl === "*") {
+      var result = cb("*");
+      if (typeof cbx !== "undefined") {
+        cbx(result);
+      }
     } else {
-      return "Pmrpc ACL error.";
+      call({
+        "destination" : destination,
+        "publicProcedureName" : "getDestinationOrigin",
+        "onSuccess" : function (callResult) {
+                        result = cb(callResult.returnValue);
+                        if (typeof cbx !== "undefined") {
+                          cbx(result);
+                        }
+                      },
+        "retries" : 0,
+        "destinationDomain" : "*"});
+      return "";
     }
   }
-  
+    
   // Execute a remote call by first pinging the destination and afterwards
   // sending the request
-  function waitAndSentRequest(callId) {
+  function waitAndSendRequest(callId) {
     var callObj = callQueue[callId];
-    
-    // if the call was processed or is being processed, stop sending requests
-    if (typeof callObj === "undefined" || callObj.status === "requestSent") {
+    if (typeof callObj === "undefined") {
       return;
-    } else if (callObj.retries === 0 || callObj.status === "available") {
-      // if the destination is ready or this is the last ping try - send request
-      callObj.status = "requestSent";
-      callObj.retries = -1;
-      callQueue[callId] = callObj;
-      
-      var result = sendPmrpcMessage(
-                     callObj.destination, 
-                     callObj.message, 
-                     callObj.destinationDomain);
-                 
-      if (result === "Pmrpc ACL error." && !isNotification) {
-
-        processJSONRpcResponse(
-          createJSONRpcResponseObject(
-            createJSONRpcErrorObject(
-              -3, 
-              "Application error.",
-              "Access denied on client."),
-            null,
-            callId),
-          callObj.destination.location.toString());
-      }
-      
-      window.setTimeout(function() { waitAndSentRequest(callId); }, callObj.timeout);
-    } else if (callObj.retries <= -1) {
-      // if we didnt receive a ping response - drop the request and report error
-      delete callQueue[callId];
-
+    } else if (callObj.retries <= -1) {      
       processJSONRpcResponse(
         createJSONRpcResponseObject(
           createJSONRpcErrorObject(
           -4, "Application error.", "Destination unavailable."),
           null,
-          callId),
-        callObj.destination.location.toString());
+          callId));
+    } else if (callObj.status === "requestSent") {
+      return;
+    } else if (callObj.retries === 0 || callObj.status === "available") {
+      callObj.status = "requestSent";
+      callObj.retries = -1;
+      callQueue[callId] = callObj;
+      
+      var cbx = function(res) {
+        if (res === "Pmrpc ACL error.") {
+          processJSONRpcResponse(
+            createJSONRpcResponseObject(
+              createJSONRpcErrorObject(
+                -3, 
+                "Application error.",
+                "Access denied on client."),
+              null,
+              callId));
+        }
+        
+        self.setTimeout(function() { waitAndSendRequest(callId); }, callObj.timeout);
+      }
+
+      sendPmrpcMessage(
+        callObj.destination, callObj.message, callObj.destinationDomain, cbx);
+
     } else {
       // if we can ping some more - send a new ping request
       callObj.status = "pinging";
@@ -451,9 +484,9 @@ pmrpc = window.pmrpc = function() {
                       },
         "params" : [callObj.publicProcedureName], 
         "retries" : 0,
-        "destinationDomain" : callObj.destination.location.toString()});
+        "destinationDomain" : callObj.destinationDomain});
       callQueue[callId] = callObj;
-      window.setTimeout(function() { waitAndSentRequest(callId); }, callObj.timeout);
+      self.setTimeout(function() { waitAndSendRequest(callId); }, callObj.timeout);
     }
   }
   
@@ -466,15 +499,93 @@ pmrpc = window.pmrpc = function() {
   register({
     "publicProcedureName" : "receivePingRequest",
     "procedure" : receivePingRequest});
- 
-  // attach the pmrpc event listener
-  if (window.addEventListener) {
-    // FF
-    window.addEventListener("message", processPmrpcMessage, false);
-  } else {
-    // IE
-    window.attachEvent("onmessage", processPmrpcMessage);
+    
+  function getDestinationOrigin() {
+    return this.location.href;
   }
+  
+  // register method for receiving and returning pings
+  register({
+    "publicProcedureName" : "getDestinationOrigin",
+    "procedure" : getDestinationOrigin});
+  
+  // attach the pmrpc event listener 
+  // todo: when attaching a listener, add a special paramter which tells
+  // which object the listener is attached to using:
+  //  function (worker) {
+  //    return function(messageEvent) {
+  //      processPmrpcMessage(messageEvent, worker);
+  //    };
+  //  }(newWorker);
+  if ('window' in this || 'onmessage' in this) {
+    // window object or dedicated worker
+    if ("addEventListener" in this) {
+      // FF
+      this.addEventListener("message", processPmrpcMessage, false);
+    } else {
+      // IE
+      this.attachEvent("onmessage", processPmrpcMessage);
+    }
+  } else if ('onconnect' in this) {
+    // shared worker 
+    // set onconnect function with addeventlistener also
+    onconnect = function (e) {
+    
+      var listener = function (port) { // todo: switch to addeventlistener
+        port.source = port;  // todo: check if this is allowed - we are changing the message event
+        port.workerType = "shared";
+        
+        return function(messageEvent) {
+          processPmrpcMessage(messageEvent, port);
+        };
+      }(e.ports[0]);
+    
+      if ("addEventListener" in e.ports[0]) {
+        // FF
+        e.ports[0].addEventListener("message", processPmrpcMessage, false);
+      } else {
+        // IE
+        e.ports[0].attachEvent("onmessage", processPmrpcMessage);
+      }
+    };
+  } else {
+    throw "Error!";
+  }
+  
+  var createDedicatedWorker = this.Worker;
+  this.nonPmrpcWorker = createDedicatedWorker;
+  var createSharedWorker = this.SharedWorker;
+  this.nonPmrpcSharedWorker = createSharedWorker;
+  
+  this.Worker = function(scriptUri) {
+    var newWorker = new createDedicatedWorker(scriptUri);
+    newWorker.source = newWorker;
+    newWorker.location = scriptUri; // todo: make this handle relative urls
+    newWorker.workerType = "dedicated";
+    
+    newWorker.onmessage = function (worker) { // todo: switch to addeventlistener
+      return function(messageEvent) {
+        processPmrpcMessage(messageEvent, worker);
+      };
+    }(newWorker);
+    
+    return newWorker;
+  };
+  
+  this.SharedWorker = function(scriptUri, workerName) {
+    var newWorker = new createSharedWorker(scriptUri, workerName);
+    newWorker.source = newWorker.port;
+    newWorker.location = scriptUri; // todo: make this handle relative urls
+    newWorker.workerType = "shared";
+    
+    newWorker.port.onmessage = function (worker) { // todo: switch to addeventlistener
+      return function(messageEvent) {
+        processPmrpcMessage(messageEvent, worker);
+      };
+    }(newWorker);
+    
+    return newWorker;
+  };
   
   // return public methods
   return {

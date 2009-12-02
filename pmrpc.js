@@ -24,6 +24,7 @@ pmrpc = self.pmrpc =  function() {
     throw "pmrpc requires the JSON library";
   }
   
+  // TODO: make "contextType" private variable
   // check if postMessage APIs are available
   if (typeof this.postMessage === "undefined" &&  // window or worker
         typeof this.onconnect === "undefined") {  // shared worker
@@ -42,6 +43,7 @@ pmrpc = self.pmrpc =  function() {
     return uuid.join('');
   }
   
+  // TODO: remove this - make everything a regex?
   // Converts a wildcard expression into a regular expression
   function convertWildcardToRegex(wildcardExpression) {
     var regex = wildcardExpression.replace(
@@ -160,12 +162,9 @@ pmrpc = self.pmrpc =  function() {
     var response = createJSONRpcBaseObject();
     response.id = id;
     
-    // check to see if the error object is set
     if (typeof error === "undefined" || error === null) {
-      // no errors, go with the payload
       response.result = (result === "undefined") ? null : result;
     } else {
-      // error response
       response.error = error;
     }
     
@@ -201,7 +200,11 @@ pmrpc = self.pmrpc =  function() {
   }
   
   // receive and execute a pmrpc call which may be a request or a response
-  function processPmrpcMessage(serviceCallEvent, eventSource) {
+  function processPmrpcMessage(eventParams) {
+    var serviceCallEvent = eventParams.event;
+    var eventSource = eventParams.source;
+    var isWorkerComm = typeof eventSource !== "undefined" && eventSource !== null;
+    
     // if the message is not for pmrpc, ignore it.
     if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
       return;
@@ -210,13 +213,17 @@ pmrpc = self.pmrpc =  function() {
       
       if (typeof message.method !== "undefined") {
         // this is a request
+        
+        // ako je 
         var newServiceCallEvent = {
           data : serviceCallEvent.data,
-          source : typeof eventSource !== "undefined" ? eventSource.source : serviceCallEvent.source,
-          origin : typeof eventSource !== "undefined" ? eventSource.location : serviceCallEvent.origin
+          source : isWorkerComm ? eventSource : serviceCallEvent.source,
+          origin : isWorkerComm ? "*" : serviceCallEvent.origin,
+          shouldCheckACL : !isWorkerComm
         };
         
         response = processJSONRpcRequest(message, newServiceCallEvent);
+        
         // return the response
         if (response !== null) {
           if (message.method === "getDestinationOrigin") {
@@ -235,7 +242,7 @@ pmrpc = self.pmrpc =  function() {
   }
   
   // Process a single JSON-RPC Request
-  function processJSONRpcRequest(request, serviceCallEvent) {
+  function processJSONRpcRequest(request, serviceCallEvent, shouldCheckACL) {
     if (request.jsonrpc !== "2.0") {
       // Invalid JSON-RPC request    
       return createJSONRpcResponseObject(
@@ -250,7 +257,8 @@ pmrpc = self.pmrpc =  function() {
     
     if (typeof service !== "undefined") {
       // check the acl rights
-      if (checkACL(service.acl, serviceCallEvent.origin)) {
+      if (!serviceCallEvent.shouldCheckACL || 
+            checkACL(service.acl, serviceCallEvent.origin)) {
         try {
           if (service.isAsync) {
             // if the service is async, create a callback which the service
@@ -342,6 +350,7 @@ pmrpc = self.pmrpc =  function() {
     }
   }
   
+  // TODO: enable passing JSONrpc message as parameter, not "method", "params" etc etc
   // call remote procedure, with configuration:
   //   destination - window on which the procedure is registered
   //   publicProcedureName - name under which the procedure is registered
@@ -361,6 +370,8 @@ pmrpc = self.pmrpc =  function() {
     
     var callObj = {
       destination : config.destination,
+      destinationDomain : typeof config.destinationDomain !== "undefined" ? 
+                            config.destinationDomain : "*",
       publicProcedureName : config.publicProcedureName,
       onSuccess : typeof config.onSuccess !== "undefined" ? 
                     config.onSuccess : function (){},
@@ -368,7 +379,6 @@ pmrpc = self.pmrpc =  function() {
                     config.onError : function (){},
       retries : typeof config.retries !== "undefined" ? config.retries : 5,
       timeout : typeof config.timeout !== "undefined" ? config.timeout : 500,
-      destinationDomain : config.destinationDomain,
       status : "requestNotSent"
     };
     
@@ -390,44 +400,13 @@ pmrpc = self.pmrpc =  function() {
   }
   
   // Use the postMessage API to send a pmrpc message to a destination
-  function sendPmrpcMessage(destination, message, acl, cbx) {
-    var cb = function(destinationOrigin) {
-      if (typeof destination === "undefined" || destination === null) {
-        self.postMessage(encode(message));
-      } else if (typeof destination.frames !== "undefined") {
-        if (typeof acl === "undefined") {
-          acl = {whitelist: ["*"], blacklist: []};
-        } else if (typeof acl === "string") {
-          acl = {whitelist: [acl+"*"], blacklist: []};
-        }
-        if (checkACL(acl, destinationOrigin)) {
-          return destination.postMessage(encode(message), destinationOrigin);
-        } else {
-          return "Pmrpc ACL error.";
-        }
-      } else {
-        destination.postMessage(encode(message));
-      }
-    };
-    
-    if (acl === "*") {
-      var result = cb("*");
-      if (typeof cbx !== "undefined") {
-        cbx(result);
-      }
+  function sendPmrpcMessage(destination, message, acl) {
+    if (typeof destination === "undefined" || destination === null) {
+      self.postMessage(encode(message));
+    } else if (typeof destination.frames !== "undefined") {
+      return destination.postMessage(encode(message), acl);
     } else {
-      call({
-        "destination" : destination,
-        "publicProcedureName" : "getDestinationOrigin",
-        "onSuccess" : function (callResult) {
-                        result = cb(callResult.returnValue);
-                        if (typeof cbx !== "undefined") {
-                          cbx(result);
-                        }
-                      },
-        "retries" : 0,
-        "destinationDomain" : "*"});
-      return "";
+      destination.postMessage(encode(message));
     }
   }
     
@@ -450,25 +429,10 @@ pmrpc = self.pmrpc =  function() {
       callObj.status = "requestSent";
       callObj.retries = -1;
       callQueue[callId] = callObj;
-      
-      var cbx = function(res) {
-        if (res === "Pmrpc ACL error.") {
-          processJSONRpcResponse(
-            createJSONRpcResponseObject(
-              createJSONRpcErrorObject(
-                -3, 
-                "Application error.",
-                "Access denied on client."),
-              null,
-              callId));
-        }
-        
-        self.setTimeout(function() { waitAndSendRequest(callId); }, callObj.timeout);
-      }
 
       sendPmrpcMessage(
-        callObj.destination, callObj.message, callObj.destinationDomain, cbx);
-
+        callObj.destination, callObj.message, callObj.destinationDomain);
+      self.setTimeout(function() { waitAndSendRequest(callId); }, callObj.timeout);
     } else {
       // if we can ping some more - send a new ping request
       callObj.status = "pinging";
@@ -490,7 +454,67 @@ pmrpc = self.pmrpc =  function() {
     }
   }
   
-  // function that receives pings for methods and returns responses 
+  // attach the pmrpc event listener 
+  function addCrossBrowserEventListerner(obj, eventName, handler, bubble) {
+    if ("addEventListener" in obj) {
+      // FF
+      obj.addEventListener(eventName, handler, bubble);
+    } else {
+      // IE
+      obj.attachEvent("on" + eventName, handler);
+    }
+  }
+  
+  function createHandler(method, source, destinationType) {
+    return function(event) {
+      var params = {event : event, source : source, destinationType : destinationType};
+      method(params);
+    };
+  }
+  
+  if ('window' in this) {
+    // window object - window-to-window comm
+    var handler = createHandler(processPmrpcMessage, null, "window");
+    addCrossBrowserEventListerner(this, "message", handler, false);
+  } else if ('onmessage' in this) {
+    // dedicated worker - parent X to worker comm
+    var handler = createHandler(processPmrpcMessage, this, "worker");
+    addCrossBrowserEventListerner(this, "message", handler, false);
+  } else if ('onconnect' in this) {
+    // shared worker - parent X to shared-worker comm
+    var connectHandler = function(e) {
+      var handler = createHandler(processPmrpcMessage, e.ports[0], "sharedWorker");      
+      addCrossBrowserEventListerner(e.ports[0], "message", handler, false);
+    };
+    addCrossBrowserEventListerner(this, "connect", connectHandler, false);
+  } else {
+    throw "Pmrpc must be loaded within a browser window or web worker.";
+  }
+  
+  // Override Worker and SharedWorker constructors so that pmrpc may relay
+  // messages. For each message received from the worker, call pmrpc processing
+  // method. This is child worker to parent communication.
+    
+  var createDedicatedWorker = this.Worker;
+  this.nonPmrpcWorker = createDedicatedWorker;
+  var createSharedWorker = this.SharedWorker;
+  this.nonPmrpcSharedWorker = createSharedWorker;
+  
+  this.Worker = function(scriptUri) {
+    var newWorker = new createDedicatedWorker(scriptUri);  
+    var handler = createHandler(processPmrpcMessage, newWorker, "worker");
+    addCrossBrowserEventListerner(newWorker, "message", handler, false); 
+    return newWorker;
+  };
+  
+  this.SharedWorker = function(scriptUri, workerName) {
+    var newWorker = new createSharedWorker(scriptUri, workerName);    
+    var handler = createHandler(processPmrpcMessage, newWorker.port, "sharedWorker");
+    addCrossBrowserEventListerner(newWorker.port, "message", handler, false);
+    return newWorker;
+  };
+  
+    // function that receives pings for methods and returns responses 
   function receivePingRequest(publicProcedureName) {
     return typeof fetchRegisteredService(publicProcedureName) !== "undefined";
   }
@@ -499,94 +523,7 @@ pmrpc = self.pmrpc =  function() {
   register({
     "publicProcedureName" : "receivePingRequest",
     "procedure" : receivePingRequest});
-    
-  function getDestinationOrigin() {
-    return this.location.href;
-  }
-  
-  // register method for receiving and returning pings
-  register({
-    "publicProcedureName" : "getDestinationOrigin",
-    "procedure" : getDestinationOrigin});
-  
-  // attach the pmrpc event listener 
-  // todo: when attaching a listener, add a special paramter which tells
-  // which object the listener is attached to using:
-  //  function (worker) {
-  //    return function(messageEvent) {
-  //      processPmrpcMessage(messageEvent, worker);
-  //    };
-  //  }(newWorker);
-  if ('window' in this || 'onmessage' in this) {
-    // window object or dedicated worker
-    if ("addEventListener" in this) {
-      // FF
-      this.addEventListener("message", processPmrpcMessage, false);
-    } else {
-      // IE
-      this.attachEvent("onmessage", processPmrpcMessage);
-    }
-  } else if ('onconnect' in this) {
-    // shared worker 
-    // set onconnect function with addeventlistener also
-    onconnect = function (e) {
-    
-      var listener = function (port) { // todo: switch to addeventlistener
-        port.source = port;  // todo: check if this is allowed - we are changing the message event
-        port.workerType = "shared";
-        
-        return function(messageEvent) {
-          processPmrpcMessage(messageEvent, port);
-        };
-      }(e.ports[0]);
-    
-      if ("addEventListener" in e.ports[0]) {
-        // FF
-        e.ports[0].addEventListener("message", processPmrpcMessage, false);
-      } else {
-        // IE
-        e.ports[0].attachEvent("onmessage", processPmrpcMessage);
-      }
-    };
-  } else {
-    throw "Error!";
-  }
-  
-  var createDedicatedWorker = this.Worker;
-  this.nonPmrpcWorker = createDedicatedWorker;
-  var createSharedWorker = this.SharedWorker;
-  this.nonPmrpcSharedWorker = createSharedWorker;
-  
-  this.Worker = function(scriptUri) {
-    var newWorker = new createDedicatedWorker(scriptUri);
-    newWorker.source = newWorker;
-    newWorker.location = scriptUri; // todo: make this handle relative urls
-    newWorker.workerType = "dedicated";
-    
-    newWorker.onmessage = function (worker) { // todo: switch to addeventlistener
-      return function(messageEvent) {
-        processPmrpcMessage(messageEvent, worker);
-      };
-    }(newWorker);
-    
-    return newWorker;
-  };
-  
-  this.SharedWorker = function(scriptUri, workerName) {
-    var newWorker = new createSharedWorker(scriptUri, workerName);
-    newWorker.source = newWorker.port;
-    newWorker.location = scriptUri; // todo: make this handle relative urls
-    newWorker.workerType = "shared";
-    
-    newWorker.port.onmessage = function (worker) { // todo: switch to addeventlistener
-      return function(messageEvent) {
-        processPmrpcMessage(messageEvent, worker);
-      };
-    }(newWorker);
-    
-    return newWorker;
-  };
-  
+      
   // return public methods
   return {
     register : register,

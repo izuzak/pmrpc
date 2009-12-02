@@ -27,7 +27,7 @@
   <ol id="qunit-tests"></ol>
   <div id="main"></div>
   
-  <iframe id="testingCrossDocumentServer1" name="testingCrossDocumentServer2" src="http://pmrpc.googlecode.com/svn/trunk/testing/testingCrossDocumentServer.html" width="0" height="0" frameborder=0></iframe>
+  <iframe id="testingCrossDocumentServer1" name="testingCrossDocumentServer2" src="testingCrossDocumentServer.html" width="0" height="0" frameborder=0></iframe>
   
   <script type="text/javascript">
     var testingCrossDocumentServer = window.frames[0];
@@ -154,7 +154,7 @@
     asyncTest("Destination domain unsupported through whitelist", 1, function() {
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      stop(20000);
+      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethod, 
@@ -167,23 +167,6 @@
           ok(true);
           start();}});    
     });
-    
-    asyncTest("Destination domain unsupported through blacklist", 1, function() {
-      var testingServerEchoMethod = "testingServerEchoMethod";
-      var testingEchoParameter = "testingEchoParameter";
-      stop(20000);
-      pmrpc.call({
-        destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethod, 
-        params : [testingEchoParameter],
-        destinationDomain : { whitelist : "*", blacklist : "http://www.gmodules*" }, 
-        onSuccess : function(result){
-          ok(false, "help!");
-          start(); },
-        onError : function(statusObj){
-          ok(true);
-          start();}});    
-    });  
     
     asyncTest("Source domain unsupported through blacklist", 1, function() {
       var testingServerEchoMethodUnsupportedBL = "testingServerEchoMethodUnsupportedBL";
@@ -278,7 +261,7 @@
       ok(dedicatedWorkerImplemented, "Worker API must be implemented.");
     });
     
-    asyncTest("Container-to-worker echo", 1, function() {
+    asyncTest("Container-to-worker echo", 2, function() {
       var dedicatedWorkerEcho = "dedicatedWorkerEcho";
       var dedicatedTestingWorker = new Worker("testingDedicatedWorker.js");
       
@@ -308,15 +291,43 @@
       });
     });
     
-    /*
     module("SharedWorker communication");
     test("SharedWorker API implemented", 1, function() {
       var sharedWorkerImplemented = typeof nonPmrpcSharedWorker !== "undefined";
       ok(sharedWorkerImplemented, "SharedWorker API must be implemented.");
     });
     
+    asyncTest("Container-to-sharedWorker echo", 2, function() {
+      var sharedWorkerEcho = "sharedWorkerEcho";
+      var sharedTestingWorker = new Worker("testingSharedWorker.js");
+      
+      stop(10000);
+      
+      pmrpc.call({
+        destination : sharedTestingWorker,
+        publicProcedureName : "pmrpcSharedWorkerTester",
+        params : [sharedWorkerEcho],
+        onSuccess : function (result) {
+          equals(result.returnValue, sharedWorkerEcho);
+        },
+        onError : function (result) {
+          ok(false, result);
+        }
+      });
+        
+      function containerSharedWorkerTest(testerParam) {
+        var sharedWorkerEcho = "sharedWorkerEcho";
+        equals(testerParam, sharedWorkerEcho);
+        start();
+        return testerParam;
+      }
+      pmrpc.register({
+        publicProcedureName : "containerSharedWorkerTest",
+        procedure : containerSharedWorkerTest
+      });
+    });
+    
     module("Discovery");
-    */
   </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 // console.log("testingWorker worker loaded");
 
-importScripts('pmrpc.js');
+importScripts('../pmrpc.js');
 
 console = {};
 console.log = function(text) {
@@ -11,33 +11,34 @@ console.log = function(text) {
   });
 };
 
-console.log("testingSharedWorker pmrpc loaded");
+//console.log("testingSharedWorker pmrpc loaded");
 
-function pmrpcWorkerTester(testerParam) {
-  console.log("testingSharedWorker pmrpcWorkerTester called with param: " + testerParam);
-  return testerParam + " from worker";
+function pmrpcSharedWorkerTester(testerParam) {
+  //console.log("testingSharedWorker pmrpcWorkerTester called with param: " + testerParam);
+  return testerParam;
 }
 
 function sendMessage() {
-  console.log("testingSharedWorker before sending message");
+  var sharedWorkerEcho = "sharedWorkerEcho";
+  //console.log("testingSharedWorker before sending message");
   pmrpc.call({
-    publicProcedureName : "containerWorkerTest",
-    params : ["Hello from worker!"],
+    publicProcedureName : "containerSharedWorkerTest",
+    params : [sharedWorkerEcho],
   });
-  console.log("testingSharedWorker after sending message");
+  //console.log("testingSharedWorker after sending message");
 }
 
-console.log("testingSharedWorker procedure created");
+//console.log("testingSharedWorker procedure created");
 
 pmrpc.register({
-  publicProcedureName : "pmrpcWorkerTester",
-  procedure : pmrpcWorkerTester,
+  publicProcedureName : "pmrpcSharedWorkerTester",
+  procedure : pmrpcSharedWorkerTester,
   retries : 5
 });
 
-console.log("testingSharedWorker procedure registered");
+//console.log("testingSharedWorker procedure registered");
 
 //setTimeout(sendMessage, 10000);
 sendMessage();
 
-console.log("testingSharedWorker finished");
+//console.log("testingSharedWorker finished");

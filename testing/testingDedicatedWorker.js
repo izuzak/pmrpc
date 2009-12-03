@@ -33,7 +33,6 @@ function sendMessage() {
 pmrpc.register({
   publicProcedureName : "pmrpcWorkerTester",
   procedure : pmrpcWorkerTester,
-  retries : 5
 });
 
 //console.log("testingWorker procedure registered");

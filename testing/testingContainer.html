@@ -291,7 +291,6 @@
       });
     });
     
-    module("SharedWorker communication");
     test("SharedWorker API implemented", 1, function() {
       var sharedWorkerImplemented = typeof nonPmrpcSharedWorker !== "undefined";
       ok(sharedWorkerImplemented, "SharedWorker API must be implemented.");
@@ -325,6 +324,41 @@
         publicProcedureName : "containerSharedWorkerTest",
         procedure : containerSharedWorkerTest
       });
+    });
+    
+    test("Nested workers implemented", 1, function() {
+      var nestedParentTestingWorker = new Worker("nestedParentTestingWorker.js");
+      
+      function nestedWorkersImplemented(testerParam) {
+        pmrpc.unregister("nestedWorkersImplemented");
+        ok(testerParam, testerParam.toString());
+        start();
+      }
+      
+      pmrpc.register({
+        publicProcedureName : "nestedWorkersImplemented",
+        procedure : nestedWorkersImplemented
+      });
+      
+      stop(10000);
+    });
+    
+    asyncTest("Nested workers echo", 1, function() {
+      var nestedWorkerEcho = "nestedWorkerEcho";
+      var nestedParentTestingWorker = new Worker("nestedParentTestingWorker.js");
+      
+      function containerNestedWorkerTest(testerParam) {
+        console.log("????");
+        equals(testerParam, nestedWorkerEcho);
+        start();
+      }
+      
+      pmrpc.register({
+        publicProcedureName : "containerNestedWorkerTest",
+        procedure : containerNestedWorkerTest
+      });
+      
+      stop(10000);
     });
     
     module("Discovery");

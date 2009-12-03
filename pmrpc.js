@@ -226,13 +226,8 @@ pmrpc = self.pmrpc =  function() {
         
         // return the response
         if (response !== null) {
-          if (message.method === "getDestinationOrigin") {
-            sendPmrpcMessage(
-              newServiceCallEvent.source, response, "*");
-          } else {
-            sendPmrpcMessage(
-              newServiceCallEvent.source, response, newServiceCallEvent.origin);
-          }
+          sendPmrpcMessage(
+            newServiceCallEvent.source, response, newServiceCallEvent.origin);
         }
       } else {
         // this is a response

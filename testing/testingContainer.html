@@ -298,7 +298,7 @@
     
     asyncTest("Container-to-sharedWorker echo", 2, function() {
       var sharedWorkerEcho = "sharedWorkerEcho";
-      var sharedTestingWorker = new Worker("testingSharedWorker.js");
+      var sharedTestingWorker = new SharedWorker("testingSharedWorker.js", "worker123");
       
       stop(10000);
       
@@ -348,7 +348,6 @@
       var nestedParentTestingWorker = new Worker("nestedParentTestingWorker.js");
       
       function containerNestedWorkerTest(testerParam) {
-        console.log("????");
         equals(testerParam, nestedWorkerEcho);
         start();
       }

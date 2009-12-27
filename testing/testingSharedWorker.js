@@ -1,5 +1,4 @@
 // console.log("testingWorker worker loaded");
-
 importScripts('../pmrpc.js');
 
 console = {};

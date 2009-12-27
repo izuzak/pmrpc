@@ -401,6 +401,7 @@ pmrpc = self.pmrpc =  function() {
     } else if (typeof destination.frames !== "undefined") {
       return destination.postMessage(encode(message), acl);
     } else {
+      // console.log(encode(message));
       destination.postMessage(encode(message));
     }
   }
@@ -506,6 +507,10 @@ pmrpc = self.pmrpc =  function() {
     var newWorker = new createSharedWorker(scriptUri, workerName);    
     var handler = createHandler(processPmrpcMessage, newWorker.port, "sharedWorker");
     addCrossBrowserEventListerner(newWorker.port, "message", handler, false);
+    newWorker.postMessage = function (msg, portArray) {
+      return newWorker.port.postMessage(msg, portArray);
+    };
+    newWorker.port.start();
     return newWorker;
   };
   

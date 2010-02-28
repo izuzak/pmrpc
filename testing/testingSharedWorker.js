@@ -43,6 +43,6 @@ pmrpc.register({
 
 //console.log("testingSharedWorker procedure registered");
 
-setTimeout(sendMessage, 500);
+setTimeout(sendMessage, 2000);
 
 //console.log("testingSharedWorker finished");

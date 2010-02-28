@@ -1,19 +1,25 @@
 // console.log("testingWorker worker loaded");
 importScripts('../pmrpc.js');
+eventSource = "";
 
 console = {};
 console.log = function(text) {
-  pmrpc.call({
-    publicProcedureName : "logger",
-    params : [text],
-    retries : 0
-  });
+  function logClosure() {
+    pmrpc.call({
+      destination : eventSource,
+      publicProcedureName : "logger",
+      params : [text],
+      retries : 5
+    });
+  };
+  setTimeout(logClosure, 2000);
 };
 
 //console.log("testingSharedWorker pmrpc loaded");
 
-function pmrpcSharedWorkerTester(testerParam) {
-  //console.log("testingSharedWorker pmrpcWorkerTester called with param: " + testerParam);
+function pmrpcSharedWorkerTester(testerParam, e) {
+  eventSource = e.source;
+  //console.log("testingSharedWorker pmrpcWorkerTester called with param: " + testerParam + " " + typeof e.source);
   return testerParam;
 }
 
@@ -21,6 +27,7 @@ function sendMessage() {
   var sharedWorkerEcho = "sharedWorkerEcho";
   //console.log("testingSharedWorker before sending message");
   pmrpc.call({
+    destination : eventSource,
     publicProcedureName : "containerSharedWorkerTest",
     params : [sharedWorkerEcho],
   });
@@ -36,7 +43,6 @@ pmrpc.register({
 
 //console.log("testingSharedWorker procedure registered");
 
-//setTimeout(sendMessage, 10000);
-sendMessage();
+setTimeout(sendMessage, 500);
 
 //console.log("testingSharedWorker finished");

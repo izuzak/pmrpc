@@ -210,7 +210,7 @@ pmrpc = self.pmrpc =  function() {
       return;
     } else {
       message = decode(serviceCallEvent.data);
-      
+      //if (typeof console !== "undefined" && console.log !== "undefined" && !("onconnect" in this)) { console.log("Received:" + encode(message)); }
       if (typeof message.method !== "undefined") {
         // this is a request
         
@@ -377,8 +377,7 @@ pmrpc = self.pmrpc =  function() {
       status : "requestNotSent"
     };
     
-    isNotification = typeof config.onError === "undefined" &&
-                       typeof config.onSuccess === "undefined";
+    isNotification = typeof config.onError === "undefined" && typeof config.onSuccess === "undefined";
     params = (typeof config.params !== "undefined") ? config.params : [];
     callId = generateUUID();
     callQueue[callId] = callObj; 
@@ -396,12 +395,16 @@ pmrpc = self.pmrpc =  function() {
   
   // Use the postMessage API to send a pmrpc message to a destination
   function sendPmrpcMessage(destination, message, acl) {
+    //if (typeof console !== "undefined" && console.log !== "undefined" && !("onconnect" in this)) { console.log("Sending:" + encode(message)); }
     if (typeof destination === "undefined" || destination === null) {
-      self.postMessage(encode(message));
+      if("onconnect" in this) {
+        this.sendPort.postMessage(encode(message));
+      } else {
+        self.postMessage(encode(message));
+      }
     } else if (typeof destination.frames !== "undefined") {
       return destination.postMessage(encode(message), acl);
     } else {
-      // console.log(encode(message));
       destination.postMessage(encode(message));
     }
   }
@@ -425,7 +428,6 @@ pmrpc = self.pmrpc =  function() {
       callObj.status = "requestSent";
       callObj.retries = -1;
       callQueue[callId] = callObj;
-
       sendPmrpcMessage(
         callObj.destination, callObj.message, callObj.destinationDomain);
       self.setTimeout(function() { waitAndSendRequest(callId); }, callObj.timeout);
@@ -479,8 +481,10 @@ pmrpc = self.pmrpc =  function() {
   } else if ('onconnect' in this) {
     // shared worker - parent X to shared-worker comm
     var connectHandler = function(e) {
+      //this.sendPort = e.ports[0];
       var handler = createHandler(processPmrpcMessage, e.ports[0], "sharedWorker");      
       addCrossBrowserEventListerner(e.ports[0], "message", handler, false);
+      e.ports[0].start();
     };
     addCrossBrowserEventListerner(this, "connect", connectHandler, false);
   } else {

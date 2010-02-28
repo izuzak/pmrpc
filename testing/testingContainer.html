@@ -310,7 +310,7 @@
           equals(result.returnValue, sharedWorkerEcho);
         },
         onError : function (result) {
-          ok(false, result);
+          ok(false, result.description);
         }
       });
         

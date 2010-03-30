@@ -440,7 +440,8 @@ pmrpc = self.pmrpc =  function() {
         "destination" : callObj.destination,
         "publicProcedureName" : "receivePingRequest",
         "onSuccess" : function (callResult) {
-                        if (callResult.returnValue === true) {
+                        if (callResult.returnValue === true &&
+                            typeof callQueue[callId] !== 'undefined') {
                           callQueue[callId].status = "available";
                         }
                       },

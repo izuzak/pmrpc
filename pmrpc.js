@@ -209,7 +209,7 @@ pmrpc = self.pmrpc =  function() {
     if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
       return;
     } else {
-      message = decode(serviceCallEvent.data);
+      var message = decode(serviceCallEvent.data);
       //if (typeof console !== "undefined" && console.log !== "undefined" && !("onconnect" in this)) { console.log("Received:" + encode(message)); }
       if (typeof message.method !== "undefined") {
         // this is a request

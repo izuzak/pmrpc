@@ -17,7 +17,7 @@ pmrpc.call({
 });
 
 if (typeof nonPmrpcWorker !== "undefined") {
-  var nestedChildTestingWorker = new Worker("nestedParentTestingWorker.js");
+  var nestedChildTestingWorker = new Worker("nestedChildTestingWorker.js");
 
   pmrpc.call({
     destination : nestedChildTestingWorker,

@@ -37,7 +37,6 @@ pmrpc.register({
 
 //console.log("testingWorker procedure registered");
 
-//setTimeout(sendMessage, 10000);
-sendMessage();
+setTimeout(sendMessage, 2000);
 
 //console.log("testingWorker finished");

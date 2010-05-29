@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+  <title>Pmrpc Benchmark</title>
+
+  <script type="text/javascript" src="../pmrpc.js"></script>
+  <script type="text/javascript" src="JSLitmus.js"></script>
+</head>
+<body>
+  <h1>Pmrpc Benchmark</h1>
+  <div id="main">
+	<iframe id="benchmarkServer" src="benchmarkServer.html" width="0" height="0" frameborder=0></iframe>
+
+	<script type="text/javascript" >
+		var benchmarkServer = window.frames[0];
+		var param1KB = "";
+		for (var i = 0; i < 1000; i++)
+			param1KB += Math.floor(Math.random()*11);
+
+		JSLitmus.test("Simple echo test (4B payload)", function() {
+			pmrpc.call({
+				destination: benchmarkServer,
+				publicProcedureName: "testingServerEchoMethod",
+				params: ["echo"],
+				onSuccess: function() {},
+				onError: function() {}
+			});
+		});
+
+		JSLitmus.test("Simple echo test (1KB payload)", function() {
+			pmrpc.call({
+				destination: benchmarkServer,
+				publicProcedureName: "testingServerEchoMethod",
+				params: [param1KB],
+				onSuccess: function() {},
+				onError: function() {}
+			});
+		});
+	</script>
+  </div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<html lang="en">
+<head>
+  <script type="text/javascript" src="../pmrpc.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+	 function receiver(e){
+	 	e.source.postMesage(e.data, e.origin);
+	 }
+         window.addEventListenre('message', receiver, false);
+</script>
+<div>
+</div>
+</body>
+</html>

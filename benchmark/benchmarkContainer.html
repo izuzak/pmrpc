@@ -1,42 +1,69 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
 <head>
-  <title>Pmrpc Benchmark</title>
-
-  <script type="text/javascript" src="../pmrpc.js"></script>
-  <script type="text/javascript" src="JSLitmus.js"></script>
+	<title>Pmrpc Benchmark</title>
+	<script type="text/javascript" src="../pmrpc.js"></script>
 </head>
-<body>
-  <h1>Pmrpc Benchmark</h1>
-  <div id="main">
+<body onLoad="test()">
+	<h1>Pmrpc Benchmark</h1>
+	<div id="main">
 	<iframe id="benchmarkServer" src="benchmarkServer.html" width="0" height="0" frameborder=0></iframe>
+	<iframe id="pureServer" src="pureServer.html" width="300" height="300" frameborder=0></iframe>
 
 	<script type="text/javascript" >
 		var benchmarkServer = window.frames[0];
+		var pureServer = window.frames[1];
+		var param10B = "0123456789";	
 		var param1KB = "";
-		for (var i = 0; i < 1000; i++)
+		for (var i = 0; i < 1024; i++)
+			param1KB += Math.floor(Math.random()*11);
+		var param1MB = "";
+		for (var i = 0; i < 1024*1024; i++)
 			param1KB += Math.floor(Math.random()*11);
 
-		JSLitmus.test("Simple echo test (4B payload)", function() {
-			pmrpc.call({
-				destination: benchmarkServer,
-				publicProcedureName: "testingServerEchoMethod",
-				params: ["echo"],
-				onSuccess: function() {},
-				onError: function() {}
-			});
-		});
+		function test(){
+			var resultDiv = document.getElementById("result");
+			var count = 1000;
 
-		JSLitmus.test("Simple echo test (1KB payload)", function() {
+			resultDiv.innerHTML = "Running " + count + " iterations of ECHO<br/>";
+
+			var myTime = new Array();
+			for (var i = 0; i < count; i++){
+				myTime.push((new Date()).getTime());
+				pmrpc.call({
+					destination : benchmarkServer,
+					publicProcedureName : "testingServerEchoMethod",
+					params : [param10B],
+					onSuccess : function(result){
+						},
+					onError : function(statusObj){
+						}
+				});
+			}
+			var serverTime;
+
 			pmrpc.call({
-				destination: benchmarkServer,
-				publicProcedureName: "testingServerEchoMethod",
-				params: [param1KB],
-				onSuccess: function() {},
-				onError: function() {}
+				destination : benchmarkServer,
+				publicProcedureName : "collectTimingData",
+				params : [],
+				onSuccess : function(result){
+						serverTime = result;
+						var delta = new Array();
+						var deltaAvg = 0;
+						for (var i = 0; i < count; i++) {
+							delta[i] = myTime[i] - serverTime[i];
+							deltaAvg += delta[i];
+						}		
+						resultDiv.innerHTML += "Avg delta:" + deltaAvg + "<br/>";
+					},
+				onError : function(statusObj){
+					}
 			});
-		});
+
+		}
 	</script>
-  </div>
+	</div>
+	<div id="result">
+	</div>
 </body>
 </html>

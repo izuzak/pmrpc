@@ -8,58 +8,68 @@
 	<h1>Pmrpc Benchmark</h1>
 	<div id="main">
 	<iframe id="benchmarkServer" src="benchmarkServer.html" width="0" height="0" frameborder=0></iframe>
-	<iframe id="pureServer" src="pureServer.html" width="300" height="300" frameborder=0></iframe>
 
 	<script type="text/javascript" >
-		var benchmarkServer = window.frames[0];
-		var pureServer = window.frames[1];
-		var param10B = "0123456789";	
-		var param1KB = "";
-		for (var i = 0; i < 1024; i++)
-			param1KB += Math.floor(Math.random()*11);
-		var param1MB = "";
-		for (var i = 0; i < 1024*1024; i++)
-			param1KB += Math.floor(Math.random()*11);
-
-		function test(){
+		function iterate(param, count){
+			var benchmarkServer = window.frames[0];
+			var methodName = "testingServerEchoMethod";
 			var resultDiv = document.getElementById("result");
-			var count = 1000;
-
-			resultDiv.innerHTML = "Running " + count + " iterations of ECHO<br/>";
 
 			var myTime = new Array();
+			var myLocalTime = new Array();
 			for (var i = 0; i < count; i++){
 				myTime.push((new Date()).getTime());
 				pmrpc.call({
 					destination : benchmarkServer,
-					publicProcedureName : "testingServerEchoMethod",
-					params : [param10B],
+					publicProcedureName : methodName,
+					params : [param],
 					onSuccess : function(result){
 						},
 					onError : function(statusObj){
 						}
 				});
+				myLocalTime.push((new Date()).getTime());
 			}
 			var serverTime;
+			
+			var deltaAvg = 0;
+			for (var i = 0; i < count; i++) {
+				deltaAvg += myLocalTime[i] - myTime[i];
+			}		
+			resultDiv.innerHTML += "Local average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
 
 			pmrpc.call({
 				destination : benchmarkServer,
 				publicProcedureName : "collectTimingData",
 				params : [],
 				onSuccess : function(result){
-						serverTime = result;
+						serverTime = result.returnValue;
 						var delta = new Array();
 						var deltaAvg = 0;
 						for (var i = 0; i < count; i++) {
-							delta[i] = myTime[i] - serverTime[i];
+							delta[i] = serverTime[i] - myTime[i];
 							deltaAvg += delta[i];
 						}		
-						resultDiv.innerHTML += "Avg delta:" + deltaAvg + "<br/>";
+						resultDiv.innerHTML += "One way trip average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
 					},
 				onError : function(statusObj){
+						resultDiv.innerHTML += "An error occured!(" + statusObj.description + ")<br/>";
 					}
 			});
+		}
 
+		function test(){
+			var param10B = "0123456789";	
+			var param1KB = "";
+			for (var i = 0; i < 1024; i++)
+				param1KB += Math.floor(Math.random()*10);
+			var param1MB = "";
+			for (var i = 0; i < 1024*1024; i++)
+				param1MB += Math.floor(Math.random()*10);
+			var resultDiv = document.getElementById("result");
+			resultDiv.innerHTML = "Running 1000 iterations of ECHO<br/>";
+			iterate(param10B, 1000);
+			iterate(param1KB, 1000);
 		}
 	</script>
 	</div>

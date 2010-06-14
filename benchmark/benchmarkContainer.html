@@ -46,6 +46,9 @@
 						serverTime = result.returnValue;
 						var delta = new Array();
 						var deltaAvg = 0;
+						if ( serverTime.length != count ){
+							resultDiv.innerHTML += "Warning! Results are flaky! " + (count - serverTime.length) + " results lost<br/>";
+						}
 						for (var i = 0; i < count; i++) {
 							delta[i] = serverTime[i] - myTime[i];
 							deltaAvg += delta[i];

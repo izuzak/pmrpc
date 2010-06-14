@@ -14,7 +14,9 @@
 	pmrpc.register( {
 		publicProcedureName : "collectTimingData",
 		procedure : function() {
-			return time;
+			var ret = time.slice(0);
+			time = [];
+			return ret;
 		}
 	});
 </script>

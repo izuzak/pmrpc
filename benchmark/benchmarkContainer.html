@@ -10,33 +10,21 @@
 	<iframe id="benchmarkServer" src="benchmarkServer.html" width="0" height="0" frameborder=0></iframe>
 
 	<script type="text/javascript" >
-		function iterate(param, count){
-			var benchmarkServer = window.frames[0];
-			var methodName = "testingServerEchoMethod";
-			var resultDiv = document.getElementById("result");
+		var serialCount, count;
+		var myTime = new Array();
+		var myLocalTime = new Array();
+		var benchmarkServer = window.frames[0];
+		var methodName = "testingServerEchoMethod";
+		var resultDiv = document.getElementById("result");
 
-			var myTime = new Array();
-			var myLocalTime = new Array();
-			for (var i = 0; i < count; i++){
-				myTime.push((new Date()).getTime());
-				pmrpc.call({
-					destination : benchmarkServer,
-					publicProcedureName : methodName,
-					params : [param],
-					onSuccess : function(result){
-						},
-					onError : function(statusObj){
-						}
-				});
-				myLocalTime.push((new Date()).getTime());
-			}
-			var serverTime;
-			
+		function serialEnd(param){
 			var deltaAvg = 0;
 			for (var i = 0; i < count; i++) {
 				deltaAvg += myLocalTime[i] - myTime[i];
 			}		
-			resultDiv.innerHTML += "Local average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
+			resultDiv.innerHTML += "Serial local average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
+
+			var serverTime;
 
 			pmrpc.call({
 				destination : benchmarkServer,
@@ -49,11 +37,11 @@
 						if ( serverTime.length != count ){
 							resultDiv.innerHTML += "Warning! Results are flaky! " + (count - serverTime.length) + " results lost<br/>";
 						}
-						for (var i = 0; i < count; i++) {
+						for (var i = 0; i < serverTime.length; i++) {
 							delta[i] = serverTime[i] - myTime[i];
 							deltaAvg += delta[i];
 						}		
-						resultDiv.innerHTML += "One way trip average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
+						resultDiv.innerHTML += "Serial one way trip average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
 					},
 				onError : function(statusObj){
 						resultDiv.innerHTML += "An error occured!(" + statusObj.description + ")<br/>";
@@ -61,7 +49,35 @@
 			});
 		}
 
+		function serialTest(param){
+			myTime.push((new Date()).getTime());
+			pmrpc.call({
+				destination : benchmarkServer,
+				publicProcedureName : methodName,
+				params : [param],
+				onSuccess : function(result){
+						if (serialCount > 1){
+							serialCount--;
+							serialTest(param);
+						}
+						else {
+						 	serialEnd(param);
+						}
+					},
+				onError : function(statusObj){
+					}
+			});
+			myLocalTime.push((new Date()).getTime());
+		}
+
+		function iterate(param, cnt){
+			serialCount = cnt;
+			count = cnt;
+			serialTest(param);
+		}
+
 		function test(){
+			resultDiv = document.getElementById("result");
 			var param10B = "0123456789";	
 			var param1KB = "";
 			for (var i = 0; i < 1024; i++)
@@ -69,10 +85,9 @@
 			var param1MB = "";
 			for (var i = 0; i < 1024*1024; i++)
 				param1MB += Math.floor(Math.random()*10);
-			var resultDiv = document.getElementById("result");
-			resultDiv.innerHTML = "Running 1000 iterations of ECHO<br/>";
-			iterate(param10B, 1000);
-			iterate(param1KB, 1000);
+			resultDiv.innerHTML = "Running 50 iterations of SERIAL ECHO<br/>";
+			iterate(param10B, 50);
+			//iterate(param1KB, 1000);
 		}
 	</script>
 	</div>

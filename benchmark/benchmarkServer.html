@@ -5,7 +5,7 @@
 <body>
 <script type="text/javascript">
 	var time = new Array();
-
+	
 	pmrpc.register( {
 		publicProcedureName : "testingServerEchoMethod", 
 		procedure : function(echo) {time.push((new Date()).getTime()); return echo;} 
@@ -14,9 +14,15 @@
 	pmrpc.register( {
 		publicProcedureName : "collectTimingData",
 		procedure : function() {
-			var ret = time.slice(0);
-			time = [];
-			return ret;
+			return time;
+		}
+	});
+
+	pmrpc.register( {
+		publicProcedureName : "resetTimingData",
+		procedure : function() {
+			time = []
+			return;
 		}
 	});
 </script>

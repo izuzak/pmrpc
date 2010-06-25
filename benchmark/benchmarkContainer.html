@@ -8,40 +8,73 @@
 	<h1>Pmrpc Benchmark</h1>
 	<div id="main">
 	<iframe id="benchmarkServer" src="benchmarkServer.html" width="0" height="0" frameborder=0></iframe>
+	<iframe id="pureServer" src="pureServer.html" width="0" height="0" frameborder="0"></iframe>
 
 	<script type="text/javascript" >
 		var serialCount, count;
 		var myTime = new Array();
 		var myLocalTime = new Array();
 		var benchmarkServer = window.frames[0];
+		var pureServer = window.frames[1];
 		var methodName = "testingServerEchoMethod";
 		var resultDiv = document.getElementById("result");
+		var serverTime;
 
-		function serialEnd(param){
+		function processData(heading){
 			var deltaAvg = 0;
 			for (var i = 0; i < count; i++) {
 				deltaAvg += myLocalTime[i] - myTime[i];
 			}		
-			resultDiv.innerHTML += "Serial local average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
+			resultDiv.innerHTML +=  heading + " local average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
 
-			var serverTime;
+			var delta = new Array();
+			deltaAvg = 0;
+			var min = -1;
+			var max = -1;
 
+			if ( serverTime.length != count ){
+				resultDiv.innerHTML += "Warning! Results are flaky! " + (count - serverTime.length) + " results lost<br/>";
+			}
+			for (var i = 0; i < serverTime.length; i++) {
+				delta[i] = serverTime[i] - myTime[i];
+				if ( min == -1 || delta[i] < min ) min = delta[i];
+				if ( max == -1 || delta[i] > max ) max = delta[i];
+				deltaAvg += delta[i];							
+			}
+			deltaAvg = 1.0 * deltaAvg / count;
+
+			var stdDev = 0.0;
+			for (var i = 0; i < serverTime.length; i++) {
+				stdDev += (delta[i] - deltaAvg) * (delta[i] - deltaAvg);
+			}
+			stdDev = Math.sqrt(stdDev / count);
+
+			resultDiv.innerHTML += heading + " one way trip average time (" + param.length + " Bytes payload) = " + deltaAvg + 
+							 "ms Min = " + min + "ms Max = " + max + "ms StdDev = " + stdDev  + "ms<br/>";
+		}
+
+		function displayData(heading, resumeFunction){
 			pmrpc.call({
 				destination : benchmarkServer,
 				publicProcedureName : "collectTimingData",
 				params : [],
 				onSuccess : function(result){
 						serverTime = result.returnValue;
-						var delta = new Array();
-						var deltaAvg = 0;
-						if ( serverTime.length != count ){
-							resultDiv.innerHTML += "Warning! Results are flaky! " + (count - serverTime.length) + " results lost<br/>";
-						}
-						for (var i = 0; i < serverTime.length; i++) {
-							delta[i] = serverTime[i] - myTime[i];
-							deltaAvg += delta[i];
-						}		
-						resultDiv.innerHTML += "Serial one way trip average time (" + param.length + " Bytes payload) = " + deltaAvg * 1.0 / count + "ms<br/>";
+						processData(heading);
+
+						pmrpc.call({
+							destination : benchmarkServer,
+							publicProcedureName : "resetTimingData",
+							params : [],
+							onSuccess : function(result){
+								myTime = [];
+								myLocalTime = [];
+								resumeFunction.call();
+							},
+							onError : function(statusObj){
+								resultDiv.innerHTML += "An error occured!(" + statusObj.description + ")<br/>";
+							}
+						});
 					},
 				onError : function(statusObj){
 						resultDiv.innerHTML += "An error occured!(" + statusObj.description + ")<br/>";
@@ -49,19 +82,82 @@
 			});
 		}
 
-		function serialTest(param){
+		function end(){
+		}
+
+		function pureReceiver(e){
+	 		if ( e.data[0] == "e" ){
+				if (e.data[1] == 0){
+					pureServer.postMessage(["t"], "*");	
+				}
+			}
+			else if ( e.data[0] == "t" ){
+				serverTime = e.data[1];
+				processData("Pure ");
+				pureServer.postMessage(["r"], "*");
+			}
+			else if ( e.data[0] == "r" ){
+				myTime = [];
+				myLocalTime = [];
+			}
+			else {
+				alert("Woha, dude!");
+			}
+		}
+
+		function pureParalelTest(){
+			resultDiv.innerHTML += "Seting up pure postMessage communication<br/>";
+         		window.addEventListener('message', pureReceiver, false);
+			resultDiv.innerHTML += "Running " + count + " iterations of PURE PARALEL ECHO (this SHOULD NOT take too much time. 5 seconds or less!)<br/>";
+			for (var i = count - 1; i >= 0; i--){
+				myTime.push((new Date()).getTime());
+				pureServer.postMessage(["e", param, i], "*");
+				myLocalTime.push((new Date()).getTime());
+			}
+		}
+
+		function paralelEnd(){
+			displayData("Paralel", pureParalelTest);
+		}
+
+		function paralelTest(){
+			resultDiv.innerHTML += "Running " + count + " iterations of PARALEL ECHO (this SHOULD NOT take too much time. 5 seconds or less!)<br/>";
+
+			for (var i = count - 1; i >= 0; i--){
+				myTime.push((new Date()).getTime());
+				pmrpc.call({
+					destination : benchmarkServer,
+					publicProcedureName : methodName,
+					params : [param, i],
+					onSuccess : function(result){
+							if (result.returnValue == 0){
+								paralelEnd();
+							}
+						},
+					onError : function(statusObj){
+						}
+				});
+				myLocalTime.push((new Date()).getTime());
+			}
+		}
+
+		function serialEnd(){
+			displayData("Serial", paralelTest);
+		}
+
+		function serialTest(){
 			myTime.push((new Date()).getTime());
 			pmrpc.call({
 				destination : benchmarkServer,
 				publicProcedureName : methodName,
-				params : [param],
+				params : [param, -1],
 				onSuccess : function(result){
 						if (serialCount > 1){
 							serialCount--;
-							serialTest(param);
+							serialTest();
 						}
 						else {
-						 	serialEnd(param);
+						 	serialEnd();
 						}
 					},
 				onError : function(statusObj){
@@ -70,24 +166,25 @@
 			myLocalTime.push((new Date()).getTime());
 		}
 
-		function iterate(param, cnt){
+		function runSerialTests(serialParam, cnt){
 			serialCount = cnt;
 			count = cnt;
-			serialTest(param);
+			param = serialParam;
+			serialTest();
 		}
 
 		function test(){
 			resultDiv = document.getElementById("result");
-			var param10B = "0123456789";	
+			var param10B = "adfjafasdf";	
 			var param1KB = "";
 			for (var i = 0; i < 1024; i++)
 				param1KB += Math.floor(Math.random()*10);
 			var param1MB = "";
 			for (var i = 0; i < 1024*1024; i++)
 				param1MB += Math.floor(Math.random()*10);
-			resultDiv.innerHTML = "Running 50 iterations of SERIAL ECHO<br/>";
-			iterate(param10B, 50);
-			//iterate(param1KB, 1000);
+			cnt = 50;
+			resultDiv.innerHTML = "Running " + cnt + " iterations of SERIAL ECHO (this may take some time, give it up to 30 seconds)<br/>";
+			runSerialTests(param1KB, cnt);
 		}
 	</script>
 	</div>

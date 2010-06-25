@@ -4,9 +4,29 @@
 </head>
 <body>
 <script type="text/javascript">
+	 var time = new Array();
+	 var exploded = false;
+
 	 function receiver(e){
-	 	e.source.postMesage(e.data, e.origin);
+	 	if ( e.data[0] == "e" ){
+		 	time.push((new Date()).getTime())
+		 	e.source.postMessage(["e", e.data[2]], e.origin);
+		}
+		else if ( e.data[0] == "t" ){
+		 	e.source.postMessage(["t", time], e.origin);
+		}
+		else if ( e.data[0] == "r" ){
+			time = [];
+		 	e.source.postMessage(["r"], e.origin);
+		}
+		else {
+			if ( !exploded ){
+				alert("Woha, dude!");
+				exploded = true;
+			}
+		}
 	 }
+
          window.addEventListener('message', receiver, false);
 </script>
 <div>

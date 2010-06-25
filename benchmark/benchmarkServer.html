@@ -8,7 +8,7 @@
 	
 	pmrpc.register( {
 		publicProcedureName : "testingServerEchoMethod", 
-		procedure : function(echo) {time.push((new Date()).getTime()); return echo;} 
+		procedure : function(echo, id) {time.push((new Date()).getTime()); return id;} 
 	});
 
 	pmrpc.register( {

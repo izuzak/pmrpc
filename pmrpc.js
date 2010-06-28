@@ -466,13 +466,14 @@ pmrpc = self.pmrpc =  function() {
                         if (callResult.returnValue === true &&
                             typeof callQueue[callId] !== 'undefined') {
                           callQueue[callId].status = "available";
+                          waitAndSendRequest(callId);
                         }
                       },
         "params" : [callObj.publicProcedureName], 
         "retries" : 0,
         "destinationDomain" : callObj.destinationDomain});
       callQueue[callId] = callObj;
-      self.setTimeout(function() { waitAndSendRequest(callId); }, callObj.timeout);
+      self.setTimeout(function() { waitAndSendRequest(callId); }, callObj.timeout / callObj.retries);
     }
   }
   

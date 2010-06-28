@@ -85,6 +85,7 @@
         publicProcedureName : testingServerEchoMethodRetries, 
         params : [testingEchoParameter],
         retries : 10,
+        timeout : 1500,
         onSuccess : function(result) {
           equals(result.returnValue, testingEchoParameter);
           start(); },

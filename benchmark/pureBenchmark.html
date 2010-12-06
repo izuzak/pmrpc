@@ -1,0 +1,32 @@
+<html>
+	<head>
+		<script type="text/javascript">
+			var bound = 100;
+			var cnt = 0;
+
+			function rcv(data, source) {
+				cnt = cnt + 1;
+				out = document.getElementById("out");
+				if (cnt == bound) {
+					out.innerHTML += " " + bound;
+					test(bound + 1);
+				}
+			}
+			
+			function test(new_bound) {
+				bound = new_bound;
+				out = document.getElementById("out");
+				window.onmessage = rcv;
+				for (var i = 1; i <= bound; i++){
+					window.frames[0].postMessage(i, "*");
+				}
+			}
+		</script>
+	</head>
+	<body onLoad="test(1)">
+		<iframe src="pureServer.html"></iframe>
+		<div id="out">
+			PASS:
+		</div>
+	</body>
+</html>

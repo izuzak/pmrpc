@@ -135,6 +135,7 @@
 							}
 						},
 					onError : function(statusObj){
+						resultDiv.innerHTML += "An error occured!(" + statusObj.description + ")<br/>";
 						}
 				});
 				myLocalTime.push((new Date()).getTime());
@@ -161,6 +162,7 @@
 						}
 					},
 				onError : function(statusObj){
+					resultDiv.innerHTML += "An error occured!(" + statusObj.description + ")<br/>";
 					}
 			});
 			myLocalTime.push((new Date()).getTime());
@@ -182,7 +184,7 @@
 			var param1MB = "";
 			for (var i = 0; i < 1024*1024; i++)
 				param1MB += Math.floor(Math.random()*10);
-			cnt = 50;
+			cnt = 200;
 			resultDiv.innerHTML = "Running " + cnt + " iterations of SERIAL ECHO (this may take some time, give it up to 30 seconds)<br/>";
 			runSerialTests(param1KB, cnt);
 		}

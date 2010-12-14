@@ -3,30 +3,69 @@
 		<script type="text/javascript">
 			var bound = 100;
 			var cnt = 0;
+			var startTime = -1;	
+			var size = -1;
 
 			function rcv(data, source) {
 				cnt = cnt + 1;
 				out = document.getElementById("out");
+				out.innerHTML = "TESTING: " + cnt;
 				if (cnt == bound) {
-					out.innerHTML += " " + bound;
-					test(bound + 1);
+					stopTime = (new Date()).getTime();
+					out.innerHTML = "PASS: " + bound + "<br/>";
+					results = document.getElementById("results");
+					results.innerHTML += "TEST: " + cnt + "x" + size + "<br/>";
+					results.innerHTML += "TOTAL TIME: " + (stopTime - startTime) + "<br/>";
+					results.innerHTML += "AVG TIME: " + ((stopTime - startTime) / cnt) + "<br/>";
+					passed = true;
 				}
 			}
+			window.addEventListener("message", rcv, false);
 			
-			function test(new_bound) {
+			function test(new_bound, dataSize) {
+				passed = false;				
+				cnt = 0;
 				bound = new_bound;
 				out = document.getElementById("out");
-				window.onmessage = rcv;
+				out.innerHTML = "TESTING";
+
+				size = dataSize;
+
+				data = "";
+				for (var i = 0; i < dataSize; i++)
+					data += Math.floor(Math.random()*10);
+
+				startTime = (new Date()).getTime();
 				for (var i = 1; i <= bound; i++){
-					window.frames[0].postMessage(i, "*");
+					window.frames[0].postMessage(data, "*");
 				}
 			}
 		</script>
 	</head>
-	<body onLoad="test(1)">
-		<iframe src="pureServer.html"></iframe>
+	<body onLoad="">
+		<iframe src="pureServer.html"></iframe><br/>
+		<input type="button" onClick="test(2000, 10);" value="2000 x 1 B test" />
+		<input type="button" onClick="test(2000, 10);" value="2000 x 10 B test" />
+		<input type="button" onClick="test(2000, 100);" value="2000 x 100 B test" />
+		<input type="button" onClick="test(2000, 1024);" value="2000 x 1 KB test" />
+		<input type="button" onClick="test(2000, 1024 * 10);" value="2000 x 10 KB test" />
+		<input type="button" onClick="test(2000, 1024 * 100);" value="2000 x 100 KB test" />
+		<input type="button" onClick="test(2000, 1024 * 1024);" value="2000 x 1 MB test" />
+		<br/>
+		<input type="button" onClick="test(100, 1024 * 1024);" value="100 x 1 MB test" />
+		<input type="button" onClick="test(200, 1024 * 1024);" value="200 x 1 MB test" />
+		<input type="button" onClick="test(300, 1024 * 1024);" value="300 x 1 MB test" />
+		<input type="button" onClick="test(400, 1024 * 1024);" value="400 x 1 MB test" />
+		<input type="button" onClick="test(500, 1024 * 1024);" value="500 x 1 MB test" />
+		<input type="button" onClick="test(600, 1024 * 1024);" value="600 x 1 MB test" />
+		<input type="button" onClick="test(700, 1024 * 1024);" value="700 x 1 MB test" />
+		<input type="button" onClick="test(800, 1024 * 1024);" value="800 x 1 MB test" />
+		<input type="button" onClick="test(900, 1024 * 1024);" value="900 x 1 MB test" />
+		<input type="button" onClick="test(1000, 1024 * 1024);" value="1000 x 1 MB test" />
 		<div id="out">
-			PASS:
+			PASS: 0
+		</div>
+		<div id="results">
 		</div>
 	</body>
 </html>

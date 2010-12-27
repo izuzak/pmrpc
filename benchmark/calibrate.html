@@ -1,0 +1,117 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>        
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["imageareachart"]});
+
+      function test(bound, size) {
+        var outer_start = (new Date).getTime();
+        var inner_starts = new Array(bound);
+        var inner_ends = new Array(bound);
+
+        for (var i = 0; i < bound; i++){
+          inner_starts[i] = (new Date).getTime();
+          var c = 0;
+          for (var j = 0; j < size; j++) {
+            c = c + j;
+          }
+          inner_ends[i] = (new Date).getTime();
+        }
+
+        var outer_end = (new Date).getTime();
+        out = document.getElementById("results");
+        var outer_diff = outer_end - outer_start;
+        out.innerHTML += "Outer time: " + outer_diff + " ms<br/>";
+        
+        var chartData = new google.visualization.DataTable();
+        chartData.addColumn('string', 'Delta');
+        chartData.addColumn('number', 'Frequency');
+
+        var inner_sum = 0;
+        var inner_diff_dict = {};
+        var inner_diff_min = 10000000;
+        var inner_diff_max = -1;
+        var inner_diffs = new Array(bound);
+
+        for (var i = 0; i < bound; i++) {
+          var inner_diff = inner_ends[i] - inner_starts[i];
+          if ( inner_diff_dict[inner_diff] === undefined ) {
+            inner_diff_dict[inner_diff] = 1;
+          } else {
+            inner_diff_dict[inner_diff]++;
+          }          
+          if ( inner_diff > inner_diff_max ) {
+            inner_diff_max = inner_diff;
+          }
+          if ( inner_diff < inner_diff_min ) {
+            inner_diff_min = inner_diff;
+          }
+          inner_sum += inner_diff;
+          inner_diffs[i] = inner_diff;
+        }
+
+        var inner_diff_deviation = 0;
+        var inner_diff_mean = inner_sum / bound;
+
+        for (var i = 0; i < bound; i++) {
+          inner_diff_deviation += (inner_diffs[i] - inner_diff_mean) * (inner_diffs[i] - inner_diff_mean);
+        }
+        inner_diff_deviation = Math.sqrt(inner_diff_deviation / bound);
+
+        var inner_diff_SEM = inner_diff_deviation / Math.sqrt(bound);
+        var inner_diff_95perc = inner_diff_SEM * 1.96;
+
+        out.innerHTML += "Inner sum: " + inner_sum + " ms<br/>";
+        out.innerHTML += "Inner diff min: " + inner_diff_min + " ms<br/>";
+        out.innerHTML += "Inner diff max: " + inner_diff_max + " ms<br/>";
+        out.innerHTML += "Inner diff mean: " + inner_diff_mean + " ms<br/>";
+        out.innerHTML += "Inner diff deviation: " + inner_diff_deviation + " ms<br/>";
+        out.innerHTML += "Inner diff 95% interval: [" + (inner_diff_mean -
+            inner_diff_95perc) + "," + (inner_diff_mean + inner_diff_95perc) +
+          "]<br/>";
+        
+        chartData.addRows(inner_diff_max - inner_diff_min + 1);
+        for (var i = inner_diff_min; i <= inner_diff_max; i++) {
+          chartData.setValue(i - inner_diff_min, 0, "" + i);
+          var value = 0;
+          if ( inner_diff_dict[i] !== undefined ) {
+            value = inner_diff_dict[i];
+          }
+          chartData.setValue(i - inner_diff_min, 1, value);
+        }
+
+        var chart = new google.visualization.ImageAreaChart(document.getElementById('out'));
+        chart.draw(chartData, {width: 800, height: 600, min: 0});
+
+			}
+		</script>
+	</head>
+	<body onLoad="">
+		<input type="button" onClick="test(1000, 100);" value="1000 x 100" />
+		<input type="button" onClick="test(1000, 1000);" value="1000 x 1000" />
+		<input type="button" onClick="test(1000, 10000);" value="1000 x 10000" />
+		<input type="button" onClick="test(1000, 100000);" value="1000 x 100000" />
+		<input type="button" onClick="test(1000, 1000000);" value="1000 x 1000000" />
+    <input type="button" onClick="test(1000, 10000000);" value="1000 x 10000000" />
+    <br/>
+		<input type="button" onClick="test(1000, 100000);" value="1000 x 100000" />
+		<input type="button" onClick="test(5000, 100000);" value="5000 x 100000" />
+		<input type="button" onClick="test(10000, 100000);" value="10000 x 100000" />
+		<input type="button" onClick="test(20000, 100000);" value="20000 x 100000" />
+		<input type="button" onClick="test(30000, 100000);" value="30000 x 100000" />
+    <input type="button" onClick="test(50000, 100000);" value="50000 x 100000" />
+    <br/>
+		<input type="button" onClick="test(1000, 1000000);" value="1000 x 1000000" />
+		<input type="button" onClick="test(2000, 1000000);" value="2000 x 1000000" />
+		<input type="button" onClick="test(3000, 1000000);" value="3000 x 1000000" />
+		<input type="button" onClick="test(4000, 1000000);" value="4000 x 1000000" />
+		<input type="button" onClick="test(5000, 1000000);" value="5000 x 1000000" />
+		<input type="button" onClick="test(10000, 1000000);" value="10000 x 1000000" />
+
+		<div id="out">
+			
+		</div>
+		<div id="results">
+		</div>
+	</body>
+</html>

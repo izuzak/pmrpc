@@ -3,5 +3,6 @@
   <ModulePrefs title="Pmrpc benchmark gadget" />
   <Content type="html"><![CDATA[
     <iframe src="http://pmrpc.googlecode.com/svn/trunk/benchmark/pureBenchmark.html" width="100%" height="1100" frameborder=0></iframe>
+    <iframe src="http://pmrpc.googlecode.com/svn/trunk/benchmark/pmrpcBenchmark.html" width="100%" height="1100" frameborder=0></iframe>
   ]]></Content>
 </Module>

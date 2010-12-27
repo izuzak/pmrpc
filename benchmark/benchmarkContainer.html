@@ -8,7 +8,7 @@
 	<h1>Pmrpc Benchmark</h1>
 	<div id="main">
 	<iframe id="benchmarkServer" src="benchmarkServer.html" width="0" height="0" frameborder=0></iframe>
-	<iframe id="pureServer" src="pureServer.html" width="0" height="0" frameborder="0"></iframe>
+	<iframe id="benchmarkPureServer" src="benchmarkPureServer.html" width="0" height="0" frameborder="0"></iframe>
 
 	<script type="text/javascript" >
 		var serialCount, count;
@@ -107,8 +107,9 @@
 
 		function pureParalelTest(){
 			resultDiv.innerHTML += "Seting up pure postMessage communication<br/>";
-         		window.addEventListener('message', pureReceiver, false);
-			resultDiv.innerHTML += "Running " + count + " iterations of PURE PARALEL ECHO (this SHOULD NOT take too much time. 5 seconds or less!)<br/>";
+      window.addEventListener('message', pureReceiver, false);
+
+			resultDiv.innerHTML += "Running " + count + " iterations of PURE PARALEL ECHO<br/>";
 			for (var i = count - 1; i >= 0; i--){
 				myTime.push((new Date()).getTime());
 				pureServer.postMessage(["e", param, i], "*");
@@ -121,7 +122,7 @@
 		}
 
 		function paralelTest(){
-			resultDiv.innerHTML += "Running " + count + " iterations of PARALEL ECHO (this SHOULD NOT take too much time. 5 seconds or less!)<br/>";
+			resultDiv.innerHTML += "Running " + count + " iterations of PARALEL ECHO<br/>";
 
 			for (var i = count - 1; i >= 0; i--){
 				myTime.push((new Date()).getTime());
@@ -184,8 +185,8 @@
 			var param1MB = "";
 			for (var i = 0; i < 1024*1024; i++)
 				param1MB += Math.floor(Math.random()*10);
-			cnt = 200;
-			resultDiv.innerHTML = "Running " + cnt + " iterations of SERIAL ECHO (this may take some time, give it up to 30 seconds)<br/>";
+			cnt = 300;
+			resultDiv.innerHTML = "Running " + cnt + " iterations of SERIAL ECHO<br/>";
 			runSerialTests(param1KB, cnt);
 		}
 	</script>

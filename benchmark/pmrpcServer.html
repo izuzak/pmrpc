@@ -1,0 +1,19 @@
+<html lang="en">
+<head>
+  <script type="text/javascript" src="../pmrpc.js"></script>
+</head>
+<body>
+<script type="text/javascript">
+	var time = new Array();
+	
+	pmrpc.register({
+		publicProcedureName : "echo", 
+    procedure : function(echo) {
+      return echo;
+    } 
+  });
+
+</script>
+Pmrpc server here!
+</body>
+</html>

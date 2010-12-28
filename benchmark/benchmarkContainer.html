@@ -3,24 +3,30 @@
 <head>
 	<title>Pmrpc Benchmark</title>
 	<script type="text/javascript" src="../pmrpc.js"></script>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>        
 </head>
-<body onLoad="test()">
+<body>
 	<h1>Pmrpc Benchmark</h1>
 	<div id="main">
-	<iframe id="benchmarkServer" src="benchmarkServer.html" width="0" height="0" frameborder=0></iframe>
-	<iframe id="benchmarkPureServer" src="benchmarkPureServer.html" width="0" height="0" frameborder="0"></iframe>
+	<iframe id="benchmarkServer" src="benchmarkServer.html"></iframe>
+	<iframe id="benchmarkPureServer" src="benchmarkPureServer.html"></iframe>
 
 	<script type="text/javascript" >
+    google.load("visualization", "1", {packages:["imageareachart"]});
 		var serialCount, count;
 		var myTime = new Array();
 		var myLocalTime = new Array();
 		var benchmarkServer = window.frames[0];
 		var pureServer = window.frames[1];
-		var methodName = "testingServerEchoMethod";
 		var resultDiv = document.getElementById("result");
 		var serverTime;
 
 		function processData(heading){
+      var chartData = new google.visualization.DataTable();
+      chartData.addColumn('string', 'Delta');
+      chartData.addColumn('number', 'Frequency');
+
+
 			var deltaAvg = 0;
 			for (var i = 0; i < count; i++) {
 				deltaAvg += myLocalTime[i] - myTime[i];
@@ -34,11 +40,19 @@
 
 			if ( serverTime.length != count ){
 				resultDiv.innerHTML += "Warning! Results are flaky! " + (count - serverTime.length) + " results lost<br/>";
-			}
+      }
+
+      var delta_frequency = {};
+
 			for (var i = 0; i < serverTime.length; i++) {
 				delta[i] = serverTime[i] - myTime[i];
 				if ( min == -1 || delta[i] < min ) min = delta[i];
-				if ( max == -1 || delta[i] > max ) max = delta[i];
+        if ( max == -1 || delta[i] > max ) max = delta[i];
+        if ( delta_frequency[delta[i]] === undefined ) {
+          delta_frequency[delta[i]] = 1;
+        } else {
+          delta_frequency[delta[i]]++;
+        }
 				deltaAvg += delta[i];							
 			}
 			deltaAvg = 1.0 * deltaAvg / count;
@@ -47,10 +61,27 @@
 			for (var i = 0; i < serverTime.length; i++) {
 				stdDev += (delta[i] - deltaAvg) * (delta[i] - deltaAvg);
 			}
-			stdDev = Math.sqrt(stdDev / count);
+      stdDev = Math.sqrt(stdDev / count);
 
-			resultDiv.innerHTML += heading + " one way trip average time (" + param.length + " Bytes payload) = " + deltaAvg + 
-							 "ms Min = " + min + "ms Max = " + max + "ms StdDev = " + stdDev  + "ms<br/>";
+      var perc95 = stdDev / Math.sqrt(count) * 1.96;
+
+      resultDiv.innerHTML += heading + " one way trip average time (" + param.length + " Bytes payload) = " + deltaAvg +         
+        "ms Min = " + min + "ms Max = " + max + "ms StdDev = " + stdDev  + "ms<br/>";
+      resultDiv.innerHTML += heading + " 95% confidence interval [" + (deltaAvg
+          - perc95) + "," + (deltaAvg + perc95) + "]<br/>";
+
+      chartData.addRows(max - min + 1);
+      for (var i = min; i <= max; i++) {
+        chartData.setValue(i - min, 0, "" + i);
+        var value = 0;
+        if ( delta_frequency[i] !== undefined ) {
+          value = delta_frequency[i];
+        }
+        chartData.setValue(i - min, 1, value);
+      }
+
+      var chart = new google.visualization.ImageAreaChart(document.getElementById(heading + "Graph"));
+      chart.draw(chartData, {width: 800, height: 600, min: 0});
 		}
 
 		function displayData(heading, resumeFunction){
@@ -83,75 +114,53 @@
 		}
 
 		function end(){
+      resultDiv.innerHTML += "Test finished.<br/>";
 		}
 
 		function pureReceiver(e){
-	 		if ( e.data[0] == "e" ){
-				if (e.data[1] == 0){
+			myTime.push((new Date()).getTime());
+	 		if ( e.data[0] == "o" ){
+        if (e.data[1] == 0){
+          resultDiv.innerHTML += "Timing done!<br/>";
 					pureServer.postMessage(["t"], "*");	
-				}
+        } else {
+		      pureServer.postMessage(["o", param, e.data[1] - 1], "*");
+			    myLocalTime.push((new Date()).getTime());
+        }
 			}
 			else if ( e.data[0] == "t" ){
 				serverTime = e.data[1];
-				processData("Pure ");
+				processData("postMessage");
 				pureServer.postMessage(["r"], "*");
 			}
 			else if ( e.data[0] == "r" ){
 				myTime = [];
 				myLocalTime = [];
 			}
-			else {
-				alert("Woha, dude!");
+      else {
+        resultDiv.innerHTML += "Woha....Fail<br/>";
 			}
 		}
 
-		function pureParalelTest(){
+		function pureSerialTest(){
 			resultDiv.innerHTML += "Seting up pure postMessage communication<br/>";
       window.addEventListener('message', pureReceiver, false);
 
-			resultDiv.innerHTML += "Running " + count + " iterations of PURE PARALEL ECHO<br/>";
-			for (var i = count - 1; i >= 0; i--){
-				myTime.push((new Date()).getTime());
-				pureServer.postMessage(["e", param, i], "*");
-				myLocalTime.push((new Date()).getTime());
-			}
-		}
-
-		function paralelEnd(){
-			displayData("Paralel", pureParalelTest);
-		}
-
-		function paralelTest(){
-			resultDiv.innerHTML += "Running " + count + " iterations of PARALEL ECHO<br/>";
-
-			for (var i = count - 1; i >= 0; i--){
-				myTime.push((new Date()).getTime());
-				pmrpc.call({
-					destination : benchmarkServer,
-					publicProcedureName : methodName,
-					params : [param, i],
-					onSuccess : function(result){
-							if (result.returnValue == 0){
-								paralelEnd();
-							}
-						},
-					onError : function(statusObj){
-						resultDiv.innerHTML += "An error occured!(" + statusObj.description + ")<br/>";
-						}
-				});
-				myLocalTime.push((new Date()).getTime());
-			}
+			resultDiv.innerHTML += "Running " + count + " x PURE SERIAL ONE-WAY<br/>";
+			myTime.push((new Date()).getTime());
+		  pureServer.postMessage(["o", param, count - 1], "*");
+			myLocalTime.push((new Date()).getTime());
 		}
 
 		function serialEnd(){
-			displayData("Serial", paralelTest);
+			displayData("pmrpc", pureSerialTest);
 		}
 
 		function serialTest(){
 			myTime.push((new Date()).getTime());
 			pmrpc.call({
 				destination : benchmarkServer,
-				publicProcedureName : methodName,
+				publicProcedureName : "oneWay",
 				params : [param, -1],
 				onSuccess : function(result){
 						if (serialCount > 1){
@@ -176,22 +185,34 @@
 			serialTest();
 		}
 
-		function test(){
-			resultDiv = document.getElementById("result");
-			var param10B = "adfjafasdf";	
-			var param1KB = "";
-			for (var i = 0; i < 1024; i++)
-				param1KB += Math.floor(Math.random()*10);
-			var param1MB = "";
-			for (var i = 0; i < 1024*1024; i++)
-				param1MB += Math.floor(Math.random()*10);
-			cnt = 300;
-			resultDiv.innerHTML = "Running " + cnt + " iterations of SERIAL ECHO<br/>";
-			runSerialTests(param1KB, cnt);
+		function test(cnt, size){
+      resultDiv = document.getElementById("result");
+      var param = "";
+			for (var i = 0; i < size; i++)
+				param += Math.floor(Math.random()*10);
+			resultDiv.innerHTML = "Running " + cnt + " x PMRPC SERIAL ONE-WAY<br/>";
+			runSerialTests(param, cnt);
 		}
-	</script>
+  </script>
+  <br/>
+	<input type="button" onClick="test(100, 1024);" value="100 x 1024" />
+	<input type="button" onClick="test(200, 1024);" value="200 x 1024" />
+	<input type="button" onClick="test(300, 1024);" value="300 x 1024" />
+	<input type="button" onClick="test(400, 1024);" value="400 x 1024" />
+	<input type="button" onClick="test(500, 1024);" value="500 x 1024" />
+	<input type="button" onClick="test(600, 1024);" value="600 x 1024" />
+	<input type="button" onClick="test(700, 1024);" value="700 x 1024" />
+	<input type="button" onClick="test(800, 1024);" value="800 x 1024" />
+	<input type="button" onClick="test(900, 1024);" value="900 x 1024" />
+	<input type="button" onClick="test(1000, 1024);" value="1000 x 1024" />
+	<input type="button" onClick="test(2000, 1024);" value="2000 x 1024" />
+	<input type="button" onClick="test(5000, 1024);" value="5000 x 1024" />
 	</div>
 	<div id="result">
-	</div>
+  </div>
+  <div id="pmrpcGraph">
+  </div>
+  <div id="postMessageGraph">
+  </div>
 </body>
 </html>

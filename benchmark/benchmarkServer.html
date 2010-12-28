@@ -7,7 +7,7 @@
 	var time = new Array();
 	
 	pmrpc.register( {
-		publicProcedureName : "testingServerEchoMethod", 
+		publicProcedureName : "oneWay", 
 		procedure : function(echo, id) {time.push((new Date()).getTime()); return id;} 
 	});
 
@@ -26,6 +26,6 @@
 		}
 	});
 </script>
-Benchmark server here!
+Adv PMRPC server here!
 </body>
 </html>

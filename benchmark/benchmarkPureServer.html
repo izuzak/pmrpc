@@ -8,9 +8,11 @@
 	 var exploded = false;
 
 	 function receiver(e){
-	 	if ( e.data[0] == "e" ){
-		 	time.push((new Date()).getTime())
-		 	e.source.postMessage(["e", e.data[2]], e.origin);
+	 	if ( e.data[0] == "o" ){
+      time.push((new Date()).getTime())
+      var t = document.getElementById('status');
+      t.innerHTML = "RCV:" + e.data[2];
+		 	e.source.postMessage(["o", e.data[2]], e.origin);
 		}
 		else if ( e.data[0] == "t" ){
 		 	e.source.postMessage(["t", time], e.origin);
@@ -27,9 +29,11 @@
 		}
 	 }
 
-         window.addEventListener('message', receiver, false);
+   window.addEventListener('message', receiver, false);
 </script>
 <div>
+Adv.  Postmessage server here!
 </div>
+<div id="status"></div>
 </body>
 </html>

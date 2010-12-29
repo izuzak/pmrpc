@@ -10,8 +10,6 @@
 	 function receiver(e){
 	 	if ( e.data[0] == "o" ){
       time.push((new Date()).getTime())
-      var t = document.getElementById('status');
-      t.innerHTML = "RCV:" + e.data[2];
 		 	e.source.postMessage(["o", e.data[2]], e.origin);
 		}
 		else if ( e.data[0] == "t" ){

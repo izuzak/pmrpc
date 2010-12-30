@@ -47,7 +47,13 @@
             }
           });
 				}
-			}
+      }
+
+      function custom() {
+        var customBound = document.getElementById('countbox').value;
+        var customsize = document.getElementById('sizebox').value;
+        test(customBound, customsize);
+      }
 		</script>
 	</head>
 	<body onLoad="">
@@ -81,6 +87,57 @@
 		<input type="button" onClick="test(800, 1024);" value="800 x 1 KB test" />
 		<input type="button" onClick="test(900, 1024);" value="900 x 1 KB test" />
 		<input type="button" onClick="test(1000, 1024);" value="1000 x 1 KB test" />
+		<input type="button" onClick="test(3000, 1024);" value="3000 x 1 KB test" />
+		<input type="button" onClick="test(5000, 1024);" value="5000 x 1 KB test" />
+		<input type="button" onClick="test(7000, 1024);" value="7000 x 1 KB test" />
+		<input type="button" onClick="test(9000, 1024);" value="9000 x 1 KB test" />
+    <input type="button" onClick="test(10000, 1024);" value="10000 x 1 KB test" />
+    <br/>
+    <input type="button" onClick="test(10, 1024);" value="10 x 1 KB test" />
+		<input type="button" onClick="test(20, 1024);" value="20 x 1 KB test" />
+		<input type="button" onClick="test(30, 1024);" value="30 x 1 KB test" />
+		<input type="button" onClick="test(40, 1024);" value="40 x 1 KB test" />
+		<input type="button" onClick="test(50, 1024);" value="50 x 1 KB test" />
+		<input type="button" onClick="test(60, 1024);" value="60 x 1 KB test" />
+		<input type="button" onClick="test(70, 1024);" value="70 x 1 KB test" />
+		<input type="button" onClick="test(80, 1024);" value="80 x 1 KB test" />
+		<input type="button" onClick="test(90, 1024);" value="90 x 1 KB test" />
+		<input type="button" onClick="test(100, 1024);" value="100 x 1 KB test" />
+    <br/>
+    <input type="button" onClick="test(110, 1024);" value="110 x 1 KB test" />
+		<input type="button" onClick="test(120, 1024);" value="120 x 1 KB test" />
+		<input type="button" onClick="test(130, 1024);" value="130 x 1 KB test" />
+		<input type="button" onClick="test(140, 1024);" value="140 x 1 KB test" />
+		<input type="button" onClick="test(150, 1024);" value="150 x 1 KB test" />
+		<input type="button" onClick="test(160, 1024);" value="160 x 1 KB test" />
+		<input type="button" onClick="test(170, 1024);" value="170 x 1 KB test" />
+		<input type="button" onClick="test(180, 1024);" value="180 x 1 KB test" />
+		<input type="button" onClick="test(190, 1024);" value="190 x 1 KB test" />
+		<input type="button" onClick="test(200, 1024);" value="200 x 1 KB test" />
+    <br/>
+    <input type="button" onClick="test(210, 1024);" value="210 x 1 KB test" />
+		<input type="button" onClick="test(220, 1024);" value="220 x 1 KB test" />
+		<input type="button" onClick="test(230, 1024);" value="230 x 1 KB test" />
+		<input type="button" onClick="test(240, 1024);" value="240 x 1 KB test" />
+		<input type="button" onClick="test(250, 1024);" value="250 x 1 KB test" />
+		<input type="button" onClick="test(260, 1024);" value="260 x 1 KB test" />
+		<input type="button" onClick="test(270, 1024);" value="270 x 1 KB test" />
+		<input type="button" onClick="test(280, 1024);" value="280 x 1 KB test" />
+		<input type="button" onClick="test(290, 1024);" value="290 x 1 KB test" />
+		<input type="button" onClick="test(300, 1024);" value="300 x 1 KB test" />
+    <br/>
+    <input type="button" onClick="test(100, 1);" value="100 x 1 B test" />
+    <input type="button" onClick="test(100, 10);" value="100 x 10 B test" />
+    <input type="button" onClick="test(100, 100);" value="100 x 100 B test" />
+    <input type="button" onClick="test(100, 1024);" value="100 x 1 KB test" />
+    <input type="button" onClick="test(100, 10240);" value="100 x 10 KB test" />
+    <input type="button" onClick="test(100, 102400);" value="100 x 100 KB test" />
+    <input type="button" onClick="test(100, 1024*1024);" value="100 x 1 MB test" />
+    <br/>
+    Size: <input type="text" id="sizebox" /><br/>
+    Count: <input type="text" id="countbox" /><br/>
+    <input type="button" onClick="custom()"/ value="Hit it!" />
+
 		<div id="out">
 			PASS: 0
 		</div>

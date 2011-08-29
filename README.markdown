@@ -9,10 +9,13 @@ The **implementation** of the library is based on the [HTML5 Cross-document mess
 The complete list of features and the full API reference is [here](http://code.google.com/p/pmrpc/wiki/PmrpcApiDocs).
 
 We have also written serveral blog posts about Pmrpc and cross-context communication:
+
 * [Discovery and publish-subscribe support](http://ivanzuzak.info/2010/06/15/pmrpc-discovery-and-publish-subscribe-support-systematization-of-cross-context-browser-communication-systems.html)
 * [WebWorker support](http://ivanzuzak.info/2009/12/21/rpc-for-web-workers-and-distributed-computing-within-the-browser.html)
 * [Pmrpc introduction](http://ivanzuzak.info/2009/10/10/inter-window-browser-communication-and-how-to-make-it-better.html)
+
 and several papers:
+
 * [Cross-context Web browser communication with unified communication models and context types](http://ivanzuzak.info/#talks)
 * [A Classification Framework for Web Browser Cross-Context Communication](http://ivanzuzak.info/#talks)
 * [Inter-widget communication (MUPPLE lecture series)](http://ivanzuzak.info/#talks)
@@ -39,7 +42,7 @@ First, a procedure is registered for remote calls in the iframe that contains th
       publicProcedureName : "HelloPMRPC",
       procedure : function(printParam) { alert(printParam); } } );
 
-Second, the procedure is called from a remote window by specifying the iframe object which contains the remote procedure, name of the procedure and parameters:
+Second, the procedure is called from the parent window by specifying the iframe object which contains the remote procedure, name of the procedure and parameters:
 
     // [window object B] - client 
     

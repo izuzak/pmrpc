@@ -1,8 +1,8 @@
 /*
  * pmrpc 0.6 - Inter-widget remote procedure call library based on HTML5 
- *             postMessage API and JSON-RPC. http://code.google.com/p/pmrpc
+ *             postMessage API and JSON-RPC. https://github.com/izuzak/pmrpc
  *
- * Copyright 2009 Ivan Zuzak, Marko Ivankovic
+ * Copyright 2011 Ivan Zuzak, Marko Ivankovic
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

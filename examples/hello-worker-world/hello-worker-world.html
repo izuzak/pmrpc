@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <script src='https://raw.github.com/izuzak/pmrpc/master/pmrpc.js' type='text/javascript'></script>  
+  </head>
+  <body>
+    <script type="text/javascript">
+      var worker = new Worker("worker.js");
+
+      setTimeout(function() {
+        pmrpc.call( {
+          destination : worker,
+          onSuccess : function(retVal) { alert(retVal.returnValue); },
+          publicProcedureName : "HelloPMRPC",
+          params : ["Hello World!"] } ); }, 1000);
+    </script>
+  </body>
+</html>

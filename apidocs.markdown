@@ -15,7 +15,7 @@ The library provides a simple API for exposing and calling procedures (RPC) betw
 
 First, a procedure is registered for remote calls in the iframe that contains the procedure:
 
-```html
+{% highlight html %}
 <html>
   <head>
     <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
@@ -30,11 +30,11 @@ First, a procedure is registered for remote calls in the iframe that contains th
     </script>
   </body>
 </html>
-```
+{% endhighlight %}
 
 Second, the procedure is called from the parent window by specifying the iframe object which contains the remote procedure, name of the procedure and parameters:
 
-```html
+{% highlight html %}
 <html>
   <head>
     <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
@@ -50,11 +50,12 @@ Second, the procedure is called from the parent window by specifying the iframe 
     </script>
   </body>
 </html>
-```
+{% endhighlight %}
 
 Simple **Web worker communication example** (window -> worker communication):
 
-```html
+
+{% highlight html %}
 // [worker object A] - server
 
 // load pmrpc library
@@ -64,9 +65,10 @@ importScripts('pmrpc.js');
 pmrpc.register( {
   publicProcedureName : "HelloPMRPC",
   procedure : function(printParam) { alert(printParam); } } );
-```
+{% endhighlight %}
 
-```html
+
+{% highlight html %}
 // [window object B] - client 
 
 // load pmrpc library
@@ -80,7 +82,7 @@ pmrpc.call( {
   destination : testingWorker,
   publicProcedureName : "HelloPMRPC",
   params : ["Hello World!"] } ); 
-```
+{% endhighlight %}
 
 
 Pmrpc also provides several advanced features, like AJAX-style callbacks and access control lists.
@@ -176,30 +178,30 @@ Note: the JSON library available on http://www.json.org/json2.js contains an ale
 
 #### Windows and iFrames
 
-```html
+{% highlight html %}
 <script src='http://www.json.org/json2.js' type='text/javascript'></script>
 <script src='https://raw.github.com/izuzak/pmrpc/master/pmrpc.js' type='text/javascript'></script>
-```
+{% endhighlight %}
 
 #### Web workers
 
-```javascript
+{% highlight javascript %}
 importScripts('http://www.json.org/json2.js');
 importScripts('https://raw.github.com/izuzak/pmrpc/master/pmrpc.js');
-```
+{% endhighlight %}
 
 ### Register method
 
 
 The **register** method is used by servers to publically expose a procedure under a known name and sets the access control rules for that procedure:
 
-```javascript
+{% highlight javascript %}
 pmrpc.register( {
   "publicProcedureName" : publicProcedureName,
   "procedure" : procedure, 
   "acl" : accessControlList,
   "isAsynchronous" : isAsynchronous } );
-```
+{% endhighlight %}
 
 * (mandatory) **publicProcedureName** is a string that determines the public name under which the procedure will be made available to remote windows and iframes. 
 
@@ -211,7 +213,7 @@ pmrpc.register( {
 
 **Example 1:** synchronous procedure named "HelloPMRPC" accessible from windows and iframes loaded from any page on "http://www.myFriendlyDomain1.com" or exactly from the "http://www.myFriendlyDomain2.com" page. 
 
-```javascript
+{% highlight javascript %}
 var publicProcedureName = "HelloPMRPC";
 var procedure = function (alertText) { alert(alertText); return "Hello!"; };
 var accessControlList = {
@@ -225,11 +227,11 @@ pmrpc.register( {
   "procedure" : procedure, 
   "acl" : accessControlList,
   "isAsynchronous" : isAsynchronous } );
-```
+{% endhighlight %}
 
 **Example 2:** asynchronous method named "HelloPMRPC" accessible from windows and iframes loaded from any domain, except from "http://evil.com".
 
-```javascript
+{% highlight javascript %}
 var publicProcedureName = "HelloPMRPC";
 var procedure = function (alertText, pmrpcCallback) { 
   alert(alertText); 
@@ -245,33 +247,33 @@ pmrpc.register( {
   "procedure" : procedure, 
   "acl" : accessControlList,
   "isAsynchronous" : isAsynchronous } );
-```
+{% endhighlight %}
 
 
 ### Unregister method
 
 The **unregister** method cancles the registration of an exposed procedure:
 
-```javascript
+{% highlight javascript %}
 pmrpc.unregister(publicProcedureName);
-```
+{% endhighlight %}
 
 * **publicProcedureName** is a string that determines the name under which a procedure is registered.
   
 **Example 3:** unregister a procedure named "HelloPMRPC".
 
-```javascript
+{% highlight javascript %}
 var publicProcedureName = "HelloPMRPC";
 pmrpc.unregister(publicProcedureName);
-```
+{% endhighlight %}
 
 ### Call method
 
 The **call** method calls a procedure exposed on the server:
 
-```javascript
+{% highlight javascript %}
 pmrpc.call(parameters);
-```
+{% endhighlight %}
 
 * **parameters** is an object through which parameters of the call are defined:
     * (optional) **destination** is the server context object (window, iframe, web worker) on which the destination procedure is registered. There are four different possibilities for defining this parameter:
@@ -299,7 +301,7 @@ pmrpc.call(parameters);
     
 **Example 4:** invoke procedure "HelloPMRPC" with single positional parameter "Hello world from pmrpc client!". The onSuccess and onError methods alert the response, and the call will be retried up to 15 times, waiting 1500 milliseconds between retries. Servers loaded from any domain may process the call.
 
-```javascript
+{% highlight javascript %}
 var parameters = {
   destination : window.frames["targetIframeName"],
   publicProcedureName : "HelloPMRPC",
@@ -312,11 +314,11 @@ var parameters = {
 };
 
 pmrpc.call(parameters);
-```
+{% endhighlight %}
 
 **Example 5:** invoke procedure "HelloPMRPC" with single named parameter "alertText" with value "Hello world from pmrpc client!". The response is disregarded (no onSuccess and onError methods), and the call will be retried up to 5 times, waiting 1000 milliseconds between retries (default values). Servers loaded only from http://good.com domain may process the call.
 
-```javascript
+{% highlight javascript %}
 var parameters = {
   destination : window.frames["targetIframeName"],
   publicProcedureName : "HelloPMRPC",
@@ -325,13 +327,13 @@ var parameters = {
 };
 
 pmrpc.call(parameters);
-```
+{% endhighlight %}
 
 ### Discover method
 
-```javascript
+{% highlight javascript %}
 pmrpc.discover(parameters);
-```
+{% endhighlight %}
 
 * **parameters** is an object through which parameters of the call are defined:
     * (optional) **destination** is an array of server context objects (windows, iframes, web workers) on which discovery will be performed. By default, discovery is performed on all accessible contexts.
@@ -345,7 +347,7 @@ pmrpc.discover(parameters);
 
 **Example 5:** discover procedures registered at any server loaded from any origin and filter out procedures that do not contain "goodOrigin" in their public name. After that, choose the first element in the returned result array and call the procedure.
 
-```javascript
+{% highlight javascript %}
 pmrpc.discover({
   nameRegex : ".*goodName.*",
   callback : function(discoveredMethods) {
@@ -357,7 +359,7 @@ pmrpc.discover({
     };
   }
 });
-```
+{% endhighlight %}
 
 ## Examples
 

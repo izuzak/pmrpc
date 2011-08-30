@@ -1,12 +1,7 @@
 ---
 title: Pmrpc API docs
+layout: default
 ---
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <title>{{ page.title }}</title>
-  </head>
-  <body>
 
 # Pmrpc API documentation, feature list and usage examples
 
@@ -397,6 +392,3 @@ Here is an example of request and response messages in pmrpc (and JSON-RPC):
 * If you are using pmrpc in Google Chrome or Chromium to communicate with contexts loaded from local machine files - you should read [these](http://googlechromereleases.blogspot.com/2010/02/dev-channel-update_24.html) [posts](https://groups.google.com/a/chromium.org/group/chromium-html5/browse_thread/thread/b71c654e8df2e20b#). In short, you may need to start Chrome/Chromium with the `--allow-file-access-from-files` switch in order to enable communication.
 
 * If you are using pmrpc in Firefox to communicate with contexts loaded from local machine files - you should read the notes at the bottom of [this article](https://developer.mozilla.org/en/DOM/window.postMessage). In short, due to a non-standard security feature in Firefox, pmrpc will probably not work for local files.
-
-</body>
-</html>

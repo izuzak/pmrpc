@@ -32,7 +32,7 @@ Below is a **hello world example of using pmrpc**. For more examples, see the `e
 
 First, a procedure is registered for remote calls in the iframe that contains the procedure:
 
-```javascript
+```html
 <html>
   <head>
     <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
@@ -51,7 +51,7 @@ First, a procedure is registered for remote calls in the iframe that contains th
 
 Second, the procedure is called from the parent window by specifying the iframe object which contains the remote procedure, name of the procedure and parameters:
 
-```javascript
+```html
 <html>
   <head>
     <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>

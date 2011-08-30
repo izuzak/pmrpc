@@ -6,7 +6,7 @@ The **implementation** of the library is based on the [HTML5 Cross-document mess
 
 # Documentation
 
-The complete list of features and the full API reference is [here](http://code.google.com/p/pmrpc/wiki/PmrpcApiDocs).
+The complete list of features and the full API reference is [here](http://izuzak.github.com/pmrpc/apidocs.html).
 
 We have also written serveral blog posts about Pmrpc and cross-context communication:
 
@@ -73,7 +73,7 @@ Second, the procedure is called from the parent window by specifying the iframe 
 
 Pmrpc should work on Firefox 3+, Google Chrome, Opera 10.60+, Internet Explorer 8+.
 
-Visit the [pmrpc testing page](http://code.google.com/p/pmrpc/wiki/PmrpcTesting) to see if your browser can use pmrpc. In general, pmrpc is designed to work with the latest version of all popular browsers, we have no interest or intention to support old browser version (e.g. Firefox 2, IE6).
+Visit the [pmrpc testing page](http://izuzak.github.com/pmrpc/test/testingContainer.html) to see if your browser can use pmrpc. In general, pmrpc is designed to work with the latest version of all popular browsers, we have no interest or intention to support old browser version (e.g. Firefox 2, IE6).
 
 # License
 

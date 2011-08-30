@@ -1,13 +1,14 @@
+
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html lang="en">
 <head>
   <title>Pmrpc Test Suite</title>
-  <!-- QUnit -->
+
   <script type="text/javascript" src="http://code.jquery.com/jquery-latest.js"></script>
   <script type="text/javascript" src="http://github.com/jquery/qunit/raw/master/qunit/qunit.js"></script>
   <link rel="stylesheet" href="http://github.com/jquery/qunit/raw/master/qunit/qunit.css" type="text/css" media="screen" />
-
   <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+
   <script type="text/javascript">
     function logger(text) {
       if (typeof console !== "undefined" && typeof console.log !== "undefined") {
@@ -24,6 +25,7 @@
 <body>
   <h1 id="qunit-header">Pmrpc Test Suite</h1>
   <h2 id="qunit-banner"></h2>
+  <div id="qunit-testrunner-toolbar"></div>
   <h2 id="qunit-userAgent"></h2>
   <ol id="qunit-tests"></ol>
   <div id="main"></div>
@@ -63,7 +65,6 @@
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethod, 
@@ -79,8 +80,7 @@
     asyncTest("Retries", 1, function() {
       var testingServerEchoMethodRetries = "testingServerEchoMethodRetries";
       var testingEchoParameter = "testingEchoParameter";
-      
-      stop(10000);
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethodRetries, 
@@ -99,7 +99,6 @@
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         retries : 0,
@@ -117,7 +116,6 @@
       var testingServerUnregisteredMethod = "testingServerUnregisteredMethod";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerUnregisteredMethod, 
@@ -133,8 +131,6 @@
     asyncTest("Non-pmrpc call", 1, function() {
       var testingServerUnregisteredMethod = "testingServerUnregisteredMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
-      stop(10000);
       
       function nonPmrpcTest(evt) {
         equals(evt.data, testingEchoParameter);
@@ -158,7 +154,6 @@
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethod, 
@@ -175,7 +170,7 @@
     asyncTest("Destination domain unsupported through whitelist", 1, function() {
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      stop(10000);
+      
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethod, 
@@ -193,7 +188,6 @@
       var testingServerEchoMethodUnsupportedBL = "testingServerEchoMethodUnsupportedBL";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethodUnsupportedBL, 
@@ -210,7 +204,6 @@
       var testingServerEchoMethodUnsupportedWL = "testingServerEchoMethodUnsupportedWL";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethodUnsupportedWL, 
@@ -227,7 +220,6 @@
       var testingServerEchoMethodAsynchronous = "testingServerEchoMethodAsynchronous";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethodAsynchronous, 
@@ -244,7 +236,6 @@
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethod, 
@@ -261,7 +252,6 @@
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
       
-      stop(10000);
       pmrpc.call({
         destination : testingCrossDocumentServer,
         publicProcedureName : testingServerEchoMethod, 
@@ -286,19 +276,19 @@
       var dedicatedWorkerEcho = "dedicatedWorkerEcho";
       var dedicatedTestingWorker = new Worker("testingDedicatedWorker.js");
       
-      stop(10000);
-      
-      pmrpc.call({
-        destination : dedicatedTestingWorker,
-        publicProcedureName : "pmrpcWorkerTester",
-        params : [dedicatedWorkerEcho],
-        onSuccess : function (result) {
-          equals(result.returnValue, dedicatedWorkerEcho);
-        },
-        onError : function (result) {
-          ok(false, result.description);
-        }
-      });
+      setTimeout( function() {
+        pmrpc.call({
+          destination : dedicatedTestingWorker,
+          publicProcedureName : "pmrpcWorkerTester",
+          params : [dedicatedWorkerEcho],
+          onSuccess : function (result) {
+            equals(result.returnValue, dedicatedWorkerEcho);
+          },
+          onError : function (result) {
+            ok(false, result.description);
+          }
+        });
+      }, 0);
         
       function containerWorkerTest(testerParam) {
         var dedicatedWorkerEcho = "dedicatedWorkerEcho";
@@ -321,19 +311,19 @@
       var sharedWorkerEcho = "sharedWorkerEcho";
       var sharedTestingWorker = new SharedWorker("testingSharedWorker.js", "worker123");
       
-      stop(10000);
-      
-      pmrpc.call({
-        destination : sharedTestingWorker,
-        publicProcedureName : "pmrpcSharedWorkerTester",
-        params : [sharedWorkerEcho],
-        onSuccess : function (result) {
-          equals(result.returnValue, sharedWorkerEcho);
-        },
-        onError : function (result) {
-          ok(false, result.description);
-        }
-      });
+      setTimeout(function() {
+        pmrpc.call({
+          destination : sharedTestingWorker,
+          publicProcedureName : "pmrpcSharedWorkerTester",
+          params : [sharedWorkerEcho],
+          onSuccess : function (result) {
+            equals(result.returnValue, sharedWorkerEcho);
+          },
+          onError : function (result) {
+            ok(false, result.description);
+          }
+        });
+      }, 0);
         
       function containerSharedWorkerTest(testerParam) {
         var sharedWorkerEcho = "sharedWorkerEcho";
@@ -347,15 +337,13 @@
       });
     });
     
-    test("Nested workers implemented", 1, function() {
+    asyncTest("Nested workers implemented", 1, function() {
       var nestedParentTestingWorker = new Worker("nestedParentTestingWorker.js");
       
-      stop(10000);
-      
       function nestedWorkersImplemented(testerParam) {
-        ok(testerParam, testerParam.toString());
-        pmrpc.unregister("nestedWorkersImplemented");
+        ok(testerParam);
         start();
+        pmrpc.unregister("nestedWorkersImplemented");
       }
       
       pmrpc.register({
@@ -364,16 +352,15 @@
       });
     });
     
-    asyncTest("Nested workers echo", 1, function() {
+    test("Nested workers echo", 1, function() {
+      stop(5000);
       var nestedWorkerEcho = "nestedWorkerEcho";
       var nestedParentTestingWorker = new Worker("nestedParentTestingWorker.js");
       
-      stop(10000);
-      
       function containerNestedWorkerTest(testerParam) {
         equals(testerParam, nestedWorkerEcho);
-        pmrpc.unregister("containerNestedWorkerTest");
         start();
+        pmrpc.unregister("containerNestedWorkerTest"); 
       }
       
       pmrpc.register({
@@ -384,13 +371,11 @@
     
     module("Pubsub");
     
-    test("Multiple destination windows", 3, function() {
+    asyncTest("Multiple destination windows", 3, function() {
       var testingServerMultipleEchoMethod = "testingServerMultipleEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
       
       var count = 0;
-      
-      stop(10000);
       
       pmrpc.call({
         destination : [window.frames["multipleTest1"], window.frames["multipleTest2"], window.frames["multipleTest3"]],
@@ -413,14 +398,13 @@
       });
     });
     
-    test("Publish to everyone", 1, function() {
+    asyncTest("Publish to everyone", 1, function() {
       var testingServerPublishEchoMethod = "testingServerPublishEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
       
       var succCount = 0;
       var errCount = 0;
       
-      stop(10000);
       pmrpc.call({
         destination : "publish",
         publicProcedureName : testingServerPublishEchoMethod, 
@@ -442,11 +426,9 @@
       });   
     });
     
-    test("Send single message with multiple domains", 1, function() {
+    asyncTest("Send single message with multiple domains", 1, function() {
       var testingServerEchoMethod = "testingServerDomainEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-            
-      stop(10000);
       
       pmrpc.call({
         destination : [window.frames["domainTest1"]],
@@ -458,17 +440,15 @@
           start();
         },
         onError : function(statusObj){
-          ok(false, statuObj.description);
+          ok(false, statusObj.description);
           start();
         }
       });
     });
     
-    test("Send message to multiple windows with multiple domains", 1, function() {
+    asyncTest("Send message to multiple windows with multiple domains", 1, function() {
       var testingServerEchoMethod = "testingServerDomainEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
-      stop(10000);
       
       var succCount = 0;
       var errCount = 0;
@@ -507,14 +487,13 @@
       });
     });
     
-    test("Pubsub with multiple domains", 1, function() {
+    asyncTest("Pubsub with multiple domains", 1, function() {
       var testingServerPublishEchoMethod = "testingServerDomainEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
       
       var succCount = 0;
       var errCount = 0;
       
-      stop(10000);
       pmrpc.call({
         destination : "publish",
         destinationDomain : ["http://7777.urlecho.appspot.com"],
@@ -546,9 +525,8 @@
     
     module("Discovery");
     
-    test("Pull-based discovery - window contraints.", 1, function() {
+    asyncTest("Pull-based discovery - window contraints.", 1, function() {
       
-      stop(10000);
       //all
       pmrpc.discover({
         destination : [window.frames["multipleTest1"], window.frames["multipleTest2"], window.frames["multipleTest3"]],
@@ -559,8 +537,7 @@
       });
     });
     
-    test("Pull-based discovery - origin contraints.", 1, function() {
-      stop(10000);
+    asyncTest("Pull-based discovery - origin contraints.", 1, function() {
       //origin
       pmrpc.discover({
         destination : [window.frames["multipleTest1"], window.frames["multipleTest2"], window.frames["multipleTest3"]],
@@ -572,8 +549,7 @@
       });
     });
     
-    test("Pull-based discovery - name contraints.", 1, function() {
-      stop(10000);
+    asyncTest("Pull-based discovery - name contraints.", 1, function() {
       //name - pubsub
       pmrpc.discover({
         publicProcedureName : ".*testingServerPublishEchoMethod.*",
@@ -586,3 +562,4 @@
   </script>
 </body>
 </html>
+

@@ -55,33 +55,34 @@ Second, the procedure is called from the parent window by specifying the iframe 
 Simple **Web worker communication example** (window -> worker communication):
 
 
-{% highlight html %}
-// [worker object A] - server
-
-// load pmrpc library
-importScripts('pmrpc.js');
+{% highlight javascript %}
+importScripts('https://raw.github.com/izuzak/pmrpc/master/pmrpc.js');
 
 // expose a procedure
 pmrpc.register( {
   publicProcedureName : "HelloPMRPC",
-  procedure : function(printParam) { alert(printParam); } } );
+  procedure : function(printParam) { return printParam; } } );
 {% endhighlight %}
 
 
 {% highlight html %}
-// [window object B] - client 
+<html>
+  <head>
+    <script src='https://raw.github.com/izuzak/pmrpc/master/pmrpc.js' type='text/javascript'></script>  
+  </head>
+  <body>
+    <script type="text/javascript">
+      var worker = new Worker("worker.js");
 
-// load pmrpc library
-<script type="text/javascript" src="pmrpc.js" />
-
-// create worker
-var testingWorker = new Worker("testingWorker.js");
-
-// calls the exposed procedure
-pmrpc.call( {
-  destination : testingWorker,
-  publicProcedureName : "HelloPMRPC",
-  params : ["Hello World!"] } ); 
+      setTimeout(function() {
+        pmrpc.call( {
+          destination : worker,
+          onSuccess : function(retVal) { alert(retVal.returnValue); },
+          publicProcedureName : "HelloPMRPC",
+          params : ["Hello World!"] } ); }, 1000);
+    </script>
+  </body>
+</html>
 {% endhighlight %}
 
 

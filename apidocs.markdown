@@ -54,7 +54,7 @@ Second, the procedure is called from the parent window by specifying the iframe 
 
 Simple **Web worker communication example** (window -> worker communication):
 
-```javascript
+```html
 // [worker object A] - server
 
 // load pmrpc library
@@ -66,7 +66,7 @@ pmrpc.register( {
   procedure : function(printParam) { alert(printParam); } } );
 ```
 
-```javascript
+```html
 // [window object B] - client 
 
 // load pmrpc library
@@ -96,7 +96,7 @@ In pmrpc, every browser window, any iframe within a window or any web worker (de
 
 The slides below give an overview of the basic usage and advanced features of pmrpc, explained in more detail in the following sections.
 
-<iframe src="https://docs.google.com/present/embed?id=dctznkrh_677n8758gf8&amp;size=m" height="451" width="550" border="1" /> 
+<iframe src="https://docs.google.com/present/embed?id=dctznkrh_677n8758gf8&amp;size=m" height="451" width="550" border="1" > </iframe>
 
 ## Basic usage
 

@@ -26,38 +26,52 @@ We also maintain a **systematized list of other cross-context communication libr
 
 # Example
 
-Below is an **example of using pmrpc** for RPC-style communication. See the API docs for a full description of the API, feature list and usage examples. 
+Below is a **hello world example of using pmrpc**. For more examples, see the `examples` folder. See the API docs for a full description of the API, feature list and usage examples. 
 
 **Inter-window communication example** (parent window invokes procedure in nested iframe):
 
 First, a procedure is registered for remote calls in the iframe that contains the procedure:
 
-    // [iframe object A] - rpc server that exposes the procedure
-    
-    // load pmrpc library
-    <script type="text/javascript" src="pmrpc.js" />
-
-    // expose a procedure
-    pmrpc.register( {
-      publicProcedureName : "HelloPMRPC",
-      procedure : function(printParam) { alert(printParam); } } );
+```javascript
+<html>
+  <head>
+    <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      // expose a procedure
+      pmrpc.register( {
+        publicProcedureName : "HelloPMRPC",
+        procedure : function(printParam) { alert(printParam); } } 
+      );
+    </script>
+  </body>
+</html>
+```
 
 Second, the procedure is called from the parent window by specifying the iframe object which contains the remote procedure, name of the procedure and parameters:
 
-    // [window object B] - client 
-    
-    // load pmrpc library
-    <script type="text/javascript" src="pmrpc.js" />
-    
-    // call the exposed procedure
-    pmrpc.call( {
-      destination : window.frames["iFrameA"],
-      publicProcedureName : "HelloPMRPC",
-      params : ["Hello World!"] } ); 
+```javascript
+<html>
+  <head>
+    <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+  </head>
+  <body>
+    <iframe id="ifr" name="ifr" src="iframe.html" width="0" height="0" frameborder=0></iframe>
+    <script type="text/javascript">
+      // call the exposed procedure
+      pmrpc.call( {
+        destination : window.frames["ifr"],
+        publicProcedureName : "HelloPMRPC",
+        params : ["Hello World!"] } ); 
+    </script>
+  </body>
+</html>
+```
 
 # Browser support
 
-Pmrpc should work on Firefox 3+, Google Chrome, Opera 10.60+, Internet Explorer 8+
+Pmrpc should work on Firefox 3+, Google Chrome, Opera 10.60+, Internet Explorer 8+.
 
 Visit the [pmrpc testing page](http://code.google.com/p/pmrpc/wiki/PmrpcTesting) to see if your browser can use pmrpc. In general, pmrpc is designed to work with the latest version of all popular browsers, we have no interest or intention to support old browser version (e.g. Firefox 2, IE6).
 

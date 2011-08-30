@@ -1,0 +1,15 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+  </head>
+  <body>
+    <iframe id="ifr" name="ifr" src="iframe.html" width="0" height="0" frameborder=0></iframe>
+    <script type="text/javascript">
+      // call the exposed procedure
+      pmrpc.call( {
+        destination : window.frames["ifr"],
+        publicProcedureName : "HelloPMRPC",
+        params : ["Hello World!"] } ); 
+    </script>
+  </body>
+</html>

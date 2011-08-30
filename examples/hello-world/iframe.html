@@ -1,0 +1,14 @@
+<html>
+  <head>
+    <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      // expose a procedure
+      pmrpc.register( {
+        publicProcedureName : "HelloPMRPC",
+        procedure : function(printParam) { alert(printParam); } } 
+      );
+    </script>
+  </body>
+</html>

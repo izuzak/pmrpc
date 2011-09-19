@@ -6,12 +6,18 @@
     <script type="text/javascript">
       var worker = new Worker("worker.js");
 
+      // invoke remote procedure
       setTimeout(function() {
         pmrpc.call( {
           destination : worker,
           onSuccess : function(retVal) { alert(retVal.returnValue); },
-          publicProcedureName : "HelloPMRPC",
-          params : ["Hello World!"] } ); }, 1000);
+          publicProcedureName : "HelloPMRPC_1",
+          params : ["Hello World (from parent window)!"] } ); }, 1000);
+          
+      // expose a procedure
+      pmrpc.register( {
+        publicProcedureName : "HelloPMRPC_2",
+        procedure : function(printParam) { alert(printParam); } } );
     </script>
   </body>
 </html>

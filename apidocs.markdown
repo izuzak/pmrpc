@@ -276,6 +276,7 @@ The **call** method calls a procedure exposed on the server:
 pmrpc.call(parameters);
 {% endhighlight %}
 
+
 * **parameters** is an object through which parameters of the call are defined:
     * (optional) **destination** is the server context object (window, iframe, web worker) on which the destination procedure is registered. There are four different possibilities for defining this parameter:
         * when communicating from within a web worker to the parent context (which may be either a window or another worker in case of nested workers), this parameter must be left undefined
@@ -299,7 +300,8 @@ pmrpc.call(parameters);
     * (optional) **retries** is an non-negative integer which represents the number of times pmrpc will attempt to invoke the remote procedure. By default, the number of retries is 5.
     * (optional) **timeout** is the number of miliseconds pmrpc will wait for any kind of answer before givnig up or retrying. By default, the timeout is 1000ms.
     * (optional and _this feature is available only for non-worker communication_) **destinationDoman** is an either a string defining which domain the servers must be loaded from, an array of such strings or a string defining that the server may be loaded from any domain (`*`). By default, the server may be loaded from any domain.
-    
+
+ 
 **Example 4:** invoke procedure "HelloPMRPC" with single positional parameter "Hello world from pmrpc client!". The onSuccess and onError methods alert the response, and the call will be retried up to 15 times, waiting 1500 milliseconds between retries. Servers loaded from any domain may process the call.
 
 {% highlight javascript %}
@@ -316,6 +318,7 @@ var parameters = {
 
 pmrpc.call(parameters);
 {% endhighlight %}
+
 
 **Example 5:** invoke procedure "HelloPMRPC" with single named parameter "alertText" with value "Hello world from pmrpc client!". The response is disregarded (no onSuccess and onError methods), and the call will be retried up to 5 times, waiting 1000 milliseconds between retries (default values). Servers loaded only from http://good.com domain may process the call.
 
@@ -335,6 +338,7 @@ pmrpc.call(parameters);
 {% highlight javascript %}
 pmrpc.discover(parameters);
 {% endhighlight %}
+
 
 * **parameters** is an object through which parameters of the call are defined:
     * (optional) **destination** is an array of server context objects (windows, iframes, web workers) on which discovery will be performed. By default, discovery is performed on all accessible contexts.

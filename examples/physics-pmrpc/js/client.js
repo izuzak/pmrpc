@@ -41,6 +41,7 @@ var pointlight;
 var dt;
 var myprojectiletype = "sphere"; //"box" //"cone"  
 var myprojectilespeed = 150;
+var controls;
 
 var w = window.innerWidth;
 var h = window.innerHeight;
@@ -73,36 +74,43 @@ function init() {
 
 	container.appendChild(renderer.domElement);
 
+	addControls();
+
 	setEventListeners();  //double click to fire cannon
+	window.addEventListener( 'resize', onWindowResize, false );
+	
 }
 
 function addCamera() {
-	camera = new THREE.TrackballCamera({
-		fov: 60,
-		aspect: window.innerWidth / window.innerHeight,
-		near: 1,
-		far: 1e3,
-		rotateSpeed: 1.0,
-		zoomSpeed: 1.2,
-		panSpeed: 0.8,
-		noZoom: false,
-		noPan: false,
-		staticMoving: true,
-		dynamicDampingFactor: 0.3,
-		keys: [65, 83, 68]
-	});
+	
+	camera = new THREE.PerspectiveCamera(60,window.innerWidth / window.innerHeight,1,1e3);
 	camera.position.x = -15;
 	camera.position.y = 6;
 	camera.position.z = 15;
-	camera.target.position.y = 6.0;
+	//camera.target.position.y = 6.0;	
 }
+
+function addControls(){
+	controls = new THREE.TrackballControls( camera, renderer.domElement );
+	controls.rotateSpeed = 1.0;
+	controls.zoomSpeed =1.2;
+	controls.panSpeed = 0.8;
+	controls.noZoom = false;
+	controls.noPan = false;
+	controls.staticMoving = true;
+	controls.dynamicDampingFactor =  0.3;
+	controls.keys = [65, 83, 68];
+	controls.minDistance = 1.1;
+	controls.maxDistance = 100;
+}
+
 
 function addLights() {
 	var pointLight = new THREE.PointLight(0xffffff);
 	pointLight.position.set(20, 30, 20);
-	scene.addLight(pointLight);
+	scene.add(pointLight);
 	var ambientLight = new THREE.AmbientLight(0x909090);
-	scene.addLight(ambientLight);
+	scene.add(ambientLight);
 }
 
 function addGrid() {
@@ -125,7 +133,7 @@ function addGrid() {
 		ground.position.set(0, 0, 0);
 		ground.rotation.x = -1.57;
 
-		scene.addObject(ground);
+		scene.add(ground);
 }
 
 function createCube(i) {
@@ -155,7 +163,7 @@ function createCube(i) {
 	if ((myprojectiletype == "cone") && (i == 0)){
 		boxes[i].rotation.x = Math.Pi/2;
 	}
-	scene.addObject(boxes[i]);
+	scene.add(boxes[i]);
 }
 
 function setEventListeners() {
@@ -227,6 +235,24 @@ function fire(x,y) {
 	}
 }
 
+function onWindowResize( event ) {
+
+				width = window.innerWidth;
+				height = window.innerHeight;
+
+				renderer.setSize( width, height );
+
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+
+				controls.screen.width = width;
+				controls.screen.height = height;
+
+				camera.radius = ( width + height ) / 4;
+
+	};
+
+
 //requestAnimationFrame insures that render doesn't run when tab is not visible
 function animate() {
 	requestAnimationFrame(animate);
@@ -236,15 +262,9 @@ function animate() {
 
 function render() {
 
-	// Resize client if necessary
-	if (w !== window.innerWidth || h !== window.innerHeight) {
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		// set old sizes for comparison again
-		w = window.innerWidth, h = window.innerHeight;
-		camera.aspect = window.innerWidth / window.innerHeight;
-		camera.updateProjectionMatrix();
-	}
+	controls.update();
 
+	renderer.clear();
 	renderer.render(scene, camera);
 }
 

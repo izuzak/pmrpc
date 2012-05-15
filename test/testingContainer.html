@@ -71,7 +71,7 @@
         publicProcedureName : testingServerEchoMethod, 
         params : [testingEchoParameter],
         onSuccess : function(result){
-          equals(result.returnValue, testingEchoParameter);
+          equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj){
           ok(false, statusObj.description);
@@ -89,7 +89,7 @@
         retries : 10,
         timeout : 1500,
         onSuccess : function(result) {
-          equals(result.returnValue, testingEchoParameter);
+          equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj) {
           ok(false, statusObj.description);
@@ -106,7 +106,7 @@
         publicProcedureName : testingServerEchoMethod, 
         params : [testingEchoParameter],
         onSuccess : function(result){
-          equals(result.returnValue, testingEchoParameter);
+          equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj){
           ok(false, statusObj.description);
@@ -134,7 +134,7 @@
       var testingEchoParameter = "testingEchoParameter";
       
       function nonPmrpcTest(evt) {
-        equals(evt.data, testingEchoParameter);
+        equal(evt.data, testingEchoParameter);
         if (window.removeEventListener) {
           window.removeEventListener("message", nonPmrpcTest, false);
         } else {
@@ -161,7 +161,7 @@
         params : [testingEchoParameter],
         destinationDomain : "*",
         onSuccess : function(result){
-          equals(result.returnValue, testingEchoParameter);
+          equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj){
           ok(false, statusObj.description);
@@ -226,7 +226,7 @@
         publicProcedureName : testingServerEchoMethodAsynchronous, 
         params : [testingEchoParameter],
         onSuccess : function(result) {
-          equals(result.returnValue, testingEchoParameter);
+          equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj) {
           ok(false, statusObj.description);
@@ -242,7 +242,7 @@
         publicProcedureName : testingServerEchoMethod, 
         params : { echo : testingEchoParameter },
         onSuccess : function(result) {
-          equals(result.returnValue, testingEchoParameter);
+          equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj) {
           ok(false, statusObj.description);
@@ -283,7 +283,7 @@
           publicProcedureName : "pmrpcWorkerTester",
           params : [dedicatedWorkerEcho],
           onSuccess : function (result) {
-            equals(result.returnValue, dedicatedWorkerEcho);
+            equal(result.returnValue, dedicatedWorkerEcho);
           },
           onError : function (result) {
             ok(false, result.description);
@@ -293,7 +293,7 @@
         
       function containerWorkerTest(testerParam) {
         var dedicatedWorkerEcho = "dedicatedWorkerEcho";
-        equals(testerParam, dedicatedWorkerEcho);
+        equal(testerParam, dedicatedWorkerEcho);
         start();
         return testerParam;
       }
@@ -318,7 +318,7 @@
           publicProcedureName : "pmrpcSharedWorkerTester",
           params : [sharedWorkerEcho],
           onSuccess : function (result) {
-            equals(result.returnValue, sharedWorkerEcho);
+            equal(result.returnValue, sharedWorkerEcho);
           },
           onError : function (result) {
             ok(false, result.description);
@@ -328,7 +328,7 @@
         
       function containerSharedWorkerTest(testerParam) {
         var sharedWorkerEcho = "sharedWorkerEcho";
-        equals(testerParam, sharedWorkerEcho);
+        equal(testerParam, sharedWorkerEcho);
         start();
         return testerParam;
       }
@@ -359,7 +359,7 @@
       var nestedParentTestingWorker = new Worker("nestedParentTestingWorker.js");
       
       function containerNestedWorkerTest(testerParam) {
-        equals(testerParam, nestedWorkerEcho);
+        equal(testerParam, nestedWorkerEcho);
         start();
         pmrpc.unregister("containerNestedWorkerTest"); 
       }
@@ -383,7 +383,7 @@
         publicProcedureName : testingServerMultipleEchoMethod, 
         params : [testingEchoParameter],
         onSuccess : function(result){
-          equals(result.returnValue, testingEchoParameter);
+          equal(result.returnValue, testingEchoParameter);
           count++;
           if (count === 3) {
             start();
@@ -437,7 +437,7 @@
         publicProcedureName : testingServerEchoMethod, 
         params : [testingEchoParameter],
         onSuccess : function(result){
-          equals(testingEchoParameter+"1", result.returnValue, "OK");
+          equal(testingEchoParameter+"1", result.returnValue, "OK");
           start();
         },
         onError : function(statusObj){
@@ -532,7 +532,7 @@
       pmrpc.discover({
         destination : [window.frames["multipleTest1"], window.frames["multipleTest2"], window.frames["multipleTest3"]],
         callback : function(discoveredMethods) {
-          equals(discoveredMethods.length, 3);
+          equal(discoveredMethods.length, 3);
           start();
         }
       });
@@ -544,7 +544,7 @@
         destination : [window.frames["multipleTest1"], window.frames["multipleTest2"], window.frames["multipleTest3"]],
         origin : ".*1111.*",
         callback : function(discoveredMethods) {
-          equals(discoveredMethods.length, 1);
+          equal(discoveredMethods.length, 1);
           start();
         }
       });
@@ -555,7 +555,7 @@
       pmrpc.discover({
         publicProcedureName : ".*testingServerPublishEchoMethod.*",
         callback : function(discoveredMethods) {
-          equals(discoveredMethods.length, 3);
+          equal(discoveredMethods.length, 3);
           start();
         }
       });

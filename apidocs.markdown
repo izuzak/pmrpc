@@ -361,7 +361,7 @@ pmrpc.discover({
       publicProcedureName : discoveredMethods[0].publicProcedureName,
       params : ["Hello World!"],
       destinationDomain : "*",
-    };
+    });
   }
 });
 {% endhighlight %}

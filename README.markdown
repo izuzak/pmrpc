@@ -88,3 +88,4 @@ Pmrpc was developed by [Ivan Zuzak](http://ivanzuzak.info) and [Marko Ivankovic]
 # Credits
 
 * Andrew Strelzoff, Jeremy Jones, Aaron Strickland, Justin Wang, Patrick Ransom, Jordan Granville, LaDarius Williams and Eric Mixon for an [awesome example of utilizing web workers to speed and smooth physics rendering](https://github.com/izuzak/pmrpc/tree/master/examples/physics-pmrpc)
+* [Marc Fawzi](https://github.com/idibidiart) for many bug fixes and code improvements

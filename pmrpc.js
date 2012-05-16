@@ -1,5 +1,5 @@
 /*
- * pmrpc 0.6 - Inter-widget remote procedure call library based on HTML5
+ * pmrpc 0.7 - Inter-widget remote procedure call library based on HTML5
  *             postMessage API and JSON-RPC. https://github.com/izuzak/pmrpc
  *
  * Copyright 2012 Ivan Zuzak, Marko Ivankovic
@@ -43,15 +43,6 @@ pmrpc = self.pmrpc =  function() {
     return uuid.join('');
   }
 
-  // TODO: remove this - make everything a regex?
-  // Converts a wildcard expression into a regular expression
-  function convertWildcardToRegex(wildcardExpression) {
-    var regex = wildcardExpression.replace(
-                  /([\^\$\.\+\?\=\!\:\|\\\/\(\)\[\]\{\}])/g, "\\$1");
-    regex = "^" + regex.replace(/\*/g, ".*") + "$";
-    return regex;
-  }
-
   // Checks whether a domain satisfies the access control list. The access
   // control list has a whitelist and a blacklist. In order to satisfy the acl,
   // the domain must be on the whitelist, and must not be on the blacklist.
@@ -63,16 +54,14 @@ pmrpc = self.pmrpc =  function() {
     var isBlacklisted = false;
 
     for (var i=0; i<aclWhitelist.length; ++i) {
-      var aclRegex = convertWildcardToRegex(aclWhitelist[i]);
-      if(origin.match(aclRegex)) {
+      if(origin.match(new RegExp(aclWhitelist[i]))) {
         isWhitelisted = true;
         break;
       }
     }
 
-    for (var j=0; i<aclBlacklist.length; ++j) {
-      var aclRegex = convertWildcardToRegex(aclBlacklist[j]);
-      if(origin.match(aclRegex)) {
+    for (var j=0; j<aclBlacklist.length; ++j) {
+      if(origin.match(new RegExp(aclBlacklist[j]))) {
         isBlacklisted = true;
         break;
       }
@@ -190,7 +179,7 @@ pmrpc = self.pmrpc =  function() {
         "isAsync" : typeof config.isAsynchronous !== "undefined" ?
                       config.isAsynchronous : false,
         "acl" : typeof config.acl !== "undefined" ?
-                  config.acl : {whitelist: ["*"], blacklist: []}};
+                  config.acl : {whitelist: ["(.*)"], blacklist: []}};
       return true;
     }
   }
@@ -633,9 +622,9 @@ pmrpc = self.pmrpc =  function() {
       windowsForDiscovery = params.destination;
     }
     var originRegex = typeof params.originRegex === "undefined" ?
-      ".*" : params.originRegex;
+      "(.*)" : params.originRegex;
     var nameRegex = typeof params.nameRegex === "undefined" ?
-      ".*" : params.nameRegex;
+      "(.*)" : params.nameRegex;
 
     var counter = windowsForDiscovery.length;
 

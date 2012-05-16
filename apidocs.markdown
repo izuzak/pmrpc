@@ -151,7 +151,7 @@ _The Access control advanced feature is available only for inter-window communic
 
 Sometimes servers need to restrict the access to their methods only to clients from certain domains. Similarly, clients sometimes need to restrict the set of servers which may process a specific call to certain domains. In order to ensure that messages are dilivered to and from trusted domains, pmrpc supports a simple access control mechanism on both the client and the server side.
 
-On the **client side**, the client can specify from which domains must the server be loaded or specify that the server may be loaded from any domain. On the **server side**, the server can specify which procedures can be called from which domains. The server access control mechanism is based on **[access control lists (ACLs)](http://en.wikipedia.org/wiki/Access_control_list)**. An access control list contains a **whitelist** and a **blacklist**. The whitelist defines which subjects (windows or iframes) are permitted to perform an action (call a procedure or process a call), while the blacklist defines which subjects are not permitted to perform an action. Both the whitelist and the blacklist are lists of URLs defined with wildcard expressions. In order to satisfy the ACL, the domain of a subject must be in the whitelist and must not be in the blacklist.
+On the **client side**, the client can specify from which domains must the server be loaded or specify that the server may be loaded from any domain. On the **server side**, the server can specify which procedures can be called from which domains. The server access control mechanism is based on **[access control lists (ACLs)](http://en.wikipedia.org/wiki/Access_control_list)**. An access control list contains a **whitelist** and a **blacklist**. The whitelist defines which subjects (windows or iframes) are permitted to perform an action (call a procedure or process a call), while the blacklist defines which subjects are not permitted to perform an action. Both the whitelist and the blacklist are lists of URLs defined with regular expressions. In order to satisfy the ACL, the domain of a subject must be in the whitelist and must not be in the blacklist.
 
 
 ### Multicast and publish-subscribe
@@ -208,7 +208,7 @@ pmrpc.register( {
 
 * (mandatory) **procedure** is a function object representing the procedure being registered. This can be a named or unnamed function or method.
   
-* (optional and _this feature is available only for non-worker communication_) **acl** is an object containg two string arrays: the whitelist and the blacklist. This parameter is optional, and by default enables clients from any domain to call the procedure. Elements of the whitelist and blacklist are wildcard-defined strings where the `*` wildcard represents any sequence of characters. 
+* (optional and _this feature is available only for non-worker communication_) **acl** is an object containg two string arrays: the whitelist and the blacklist. This parameter is optional, and by default enables clients from any domain to call the procedure. Elements of the whitelist and blacklist are regular expression strings where the `.*` regex represents any sequence of characters.
   
 * (optional) **isAsynchronous** is a boolean value which defines whether the procedure is asynchronous or synchronous. By default, a synchronous procedure is assumed.
 
@@ -218,7 +218,7 @@ pmrpc.register( {
 var publicProcedureName = "HelloPMRPC";
 var procedure = function (alertText) { alert(alertText); return "Hello!"; };
 var accessControlList = {
-  whitelist : ["http://www.myFriendlyDomain1.com*", "http://www.myFriendlyDomain2.com"],
+  whitelist : ["http://www\\.myFriendlyDomain1\\.com.*", "http://www\\.myFriendlyDomain2\\.com"],
   blacklist : []
 };
 var isAsynchronous = false;
@@ -238,8 +238,8 @@ var procedure = function (alertText, pmrpcCallback) {
   alert(alertText); 
   pmrpcCallback("Hello!"); };
 var accessControlList = {
-  whitelist : ["*"],
-  blacklist : ["http://evil.com*"]
+  whitelist : [".*"],
+  blacklist : ["http://evil\\.com.*"]
 };
 var isAsynchronous = true;
 

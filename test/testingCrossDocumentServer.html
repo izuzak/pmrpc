@@ -11,17 +11,17 @@
   pmrpc.register( {
     publicProcedureName : "testingServerEchoMethodSupported", 
     procedure : function(echo) {return echo;},
-    acl : {whitelist: ["http://*","file://*"], blacklist:[]} });
+    acl : {whitelist: ["http://.*","file://.*"], blacklist:[]} });
 
   pmrpc.register( {
     publicProcedureName : "testingServerEchoMethodUnsupportedBL", 
     procedure : function(echo) {return echo;},
-    acl : {whitelist: ["http://*", "file*"], blacklist:["http://*", "file*"]} });
+    acl : {whitelist: ["http://.*", "file.*"], blacklist:["http://.*", "file.*"]} });
 
   pmrpc.register( {
     publicProcedureName : "testingServerEchoMethodUnsupportedWL", 
     procedure : function(echo) {return echo;},
-    acl : {whitelist: ["http://www.fail.com*"], blacklist:[]} });
+    acl : {whitelist: ["http://www\\.fail\\.com.*"], blacklist:[]} });
     
   pmrpc.register( {
     publicProcedureName : "testingServerEchoMethodAsynchronous", 

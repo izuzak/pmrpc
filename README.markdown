@@ -81,6 +81,8 @@ Pmrpc was developed by [Ivan Zuzak](http://ivanzuzak.info) and [Marko Ivankovic]
 
 # Projects using pmrpc
 
+* [Edudip](http://www.edudip.com/) - Platform for live Online Courses
+
 * [Responsive Open Learning Environments - ROLE](http://www.role-project.eu/) - European 7th Framework Programme (thanks to Bodo von der Heiden). _"ROLE will create an individual world for learning with personalization intelligence on the user’s side. ROLE will reach this objective by enabling the user to easily construct and maintain her own personal learning environment (PLE) consisting of a mix of preferred learning tools, learning services, learning resources and other related technologies."_
 
 * [OpenLaszlo](http://www.openlaszlo.org/) - An open source platform for the development and delivery of rich Internet applications.

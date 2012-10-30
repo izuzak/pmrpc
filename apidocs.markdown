@@ -291,7 +291,7 @@ pmrpc.call(parameters);
         * **params** is the parameters object of the call
         * **status** is a string containing "success"
         * **returnValue** is an object containing the result of the remotely called procedure
-        * (optional) **onError** is a function object which will be called if the call is not completed successfully for any reason. By default, no method is called. The method is passed a status object as a paramter, containing these properties:
+    * (optional) **onError** is a function object which will be called if the call is not completed successfully for any reason. By default, no method is called. The method is passed a status object as a paramter, containing these properties:
         * **destination** is the window object that contains the called procedure
         * **publicProcedureName** is the name of the procedure that was called
         * **params** is the parameters object of the call

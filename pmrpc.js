@@ -1,6 +1,6 @@
 /*
- * pmrpc 0.7 - Inter-widget remote procedure call library based on HTML5
- *             postMessage API and JSON-RPC. https://github.com/izuzak/pmrpc
+ * pmrpc 0.7.1 - Inter-widget remote procedure call library based on HTML5
+ *               postMessage API and JSON-RPC. https://github.com/izuzak/pmrpc
  *
  * Copyright 2012 Ivan Zuzak, Marko Ivankovic
  *
@@ -210,7 +210,7 @@ pmrpc = self.pmrpc =  function() {
       return;
     } else {
       var message = decode(serviceCallEvent.data);
-      //if (typeof console !== "undefined" && console.log !== "undefined" && (typeof this.frames !== "undefined")) { console.log("Received:" + encode(message)); }
+
       if (typeof message.method !== "undefined") {
         // this is a request
 
@@ -221,7 +221,7 @@ pmrpc = self.pmrpc =  function() {
           shouldCheckACL : !isWorkerComm
         };
 
-        response = processJSONRpcRequest(message, newServiceCallEvent);
+        var response = processJSONRpcRequest(message, newServiceCallEvent);
 
         // return the response
         if (response !== null) {
@@ -408,7 +408,6 @@ pmrpc = self.pmrpc =  function() {
 
   // Use the postMessage API to send a pmrpc message to a destination
   function sendPmrpcMessage(destination, message, acl) {
-    //if (typeof console !== "undefined" && console.log !== "undefined" && (typeof this.frames !== "undefined")) { console.log("Sending:" + encode(message)); }
     if (typeof destination === "undefined" || destination === null) {
       self.postMessage(encode(message));
     } else if (typeof destination.frames !== "undefined") {
@@ -591,7 +590,7 @@ pmrpc = self.pmrpc =  function() {
   function getRegisteredProcedures() {
     var regSvcs = [];
     var origin = typeof this.frames !== "undefined" ? (window.location.protocol + "//" + window.location.host + (window.location.port !== "" ? ":" + window.location.port : "")) : "";
-    for (publicProcedureName in registeredServices) {
+    for (var publicProcedureName in registeredServices) {
       if (publicProcedureName in reservedProcedureNames) {
         continue;
       } else {

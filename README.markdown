@@ -26,7 +26,7 @@ We also maintain a **systematized list of other cross-context communication libr
 
 # Example
 
-Below is a **hello world example of using pmrpc**. For more examples, see the `examples` folder. See the API docs for a full description of the API, feature list and usage examples. 
+Below is a **hello world example of using pmrpc**. For more examples, see the `examples` folder. See the API docs for a full description of the API, feature list and usage examples.
 
 **Inter-window communication example** (parent window invokes procedure in nested iframe):
 
@@ -42,7 +42,7 @@ First, a procedure is registered for remote calls in the iframe that contains th
       // expose a procedure
       pmrpc.register( {
         publicProcedureName : "HelloPMRPC",
-        procedure : function(printParam) { alert(printParam); } } 
+        procedure : function(printParam) { alert(printParam); } }
       );
     </script>
   </body>
@@ -63,7 +63,7 @@ Second, the procedure is called from the parent window by specifying the iframe 
       pmrpc.call( {
         destination : window.frames["ifr"],
         publicProcedureName : "HelloPMRPC",
-        params : ["Hello World!"] } ); 
+        params : ["Hello World!"] } );
     </script>
   </body>
 </html>
@@ -91,3 +91,4 @@ Pmrpc was developed by [Ivan Zuzak](http://ivanzuzak.info) and [Marko Ivankovic]
 
 * Andrew Strelzoff, Jeremy Jones, Aaron Strickland, Justin Wang, Patrick Ransom, Jordan Granville, LaDarius Williams and Eric Mixon for an [awesome example of utilizing web workers to speed and smooth physics rendering](https://github.com/izuzak/pmrpc/tree/master/examples/physics-pmrpc)
 * [Marc Fawzi](https://github.com/idibidiart) for many bug fixes and code improvements
+* [Jose Badeau](https://github.com/jbadeau) for many bug reports and help in debugging several [issues](https://github.com/izuzak/pmrpc/issues/7)

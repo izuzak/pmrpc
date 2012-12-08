@@ -16,7 +16,7 @@
         console.log(text);
       }
     }
-    
+
     pmrpc.register({
       publicProcedureName : "logger",
       procedure : logger
@@ -30,61 +30,61 @@
   <h2 id="qunit-userAgent"></h2>
   <ol id="qunit-tests"></ol>
   <div id="main"></div>
-  
+
   <iframe id="testingCrossDocumentServer1" name="testingCrossDocumentServer2" src="testingCrossDocumentServer.html" width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="multipleTest1" name="multipleTest1" src='http://1111.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerMultipleEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="multipleTest2" name="multipleTest2" src='http://2222.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerMultipleEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="multipleTest3" name="multipleTest3" src='http://3333.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerMultipleEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="publishTest1" name="publishTest1" src='http://4444.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerPublishEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="publishTest2" name="publishTest2" src='http://5555.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerPublishEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="publishTest3" name="publishTest3" src='http://6666.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerPublishEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="domainTest1" name="domainTest1" src='http://7777.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerDomainEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%2B%5C%221%5C%22%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="domainTest2" name="domainTest2" src='http://8888.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerDomainEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%2B%5C%222%5C%22%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  <iframe id="domainTest3" name="domainTest3" src='http://9999.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22http%3A%2F%2Fpmrpc.googlecode.com%2Fsvn%2Ftrunk%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerDomainEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%2B%5C%223%5C%22%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
-  
-  
+
+  <iframe id="multipleTest1" name="multipleTest1" src='http://1111.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerMultipleEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+  <iframe id="multipleTest2" name="multipleTest2" src='http://2222.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerMultipleEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+  <iframe id="multipleTest3" name="multipleTest3" src='http://3333.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerMultipleEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+  <iframe id="publishTest1" name="publishTest1" src='http://4444.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerPublishEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+  <iframe id="publishTest2" name="publishTest2" src='http://5555.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerPublishEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+  <iframe id="publishTest3" name="publishTest3" src='http://6666.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerPublishEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+  <iframe id="domainTest1" name="domainTest1" src='http://7777.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerDomainEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%2B%5C%221%5C%22%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+  <iframe id="domainTest2" name="domainTest2" src='http://8888.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerDomainEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%2B%5C%222%5C%22%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+  <iframe id="domainTest3" name="domainTest3" src='http://9999.urlecho.appspot.com/echo?jsonResponse=%7B%22status%22%3A200%2C%22headers%22%3A%7B%22Content-Type%22%3A%22text%2Fhtml%22%7D%2C%22content%22%3A%22%3Chtml%20lang%3D%5C%22en%5C%22%3E%5Cn%3Chead%3E%5Cn%20%20%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%20src%3D%5C%22https%3A%2F%2Fraw.github.com%2Fizuzak%2Fpmrpc%2Fmaster%2Fpmrpc.js%5C%22%3E%3C%2Fscript%3E%5Cn%3C%2Fhead%3E%5Cn%3Cbody%3E%5Cn%3Cscript%20type%3D%5C%22text%2Fjavascript%5C%22%3E%5Cn%20%20pmrpc.register(%20%7B%5Cn%20%20%20%20publicProcedureName%20%3A%20%5C%22testingServerDomainEchoMethod%5C%22%2C%20%5Cn%20%20%20%20procedure%20%3A%20function(echo)%20%7Breturn%20echo%2B%5C%223%5C%22%3B%7D%20%7D)%3B%5Cn%3C%2Fscript%3E%5Cn%3C%2Fbody%3E%5Cn%3C%2Fhtml%3E%22%7D' width="0" height="0" frameborder=0></iframe>
+
+
   <script type="text/javascript">
     var testingCrossDocumentServer = window.frames[0];
 
     module("Inter-window communication");
-    
+
     test("Cross-document messaging API implemented", 1, function() {
       var crossDocImplemented = typeof postMessage !== "undefined";
       ok(crossDocImplemented, "Cross-document messaging API must be implemented.");
     });
-    
+
     asyncTest("Normal echo call", 1, function() {
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethod, 
+        publicProcedureName : testingServerEchoMethod,
         params : [testingEchoParameter],
         onSuccess : function(result){
           equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj){
           ok(false, statusObj.description);
-          start();}});    
+          start();}});
     });
-    
+
     asyncTest("Retries", 1, function() {
       var testingServerEchoMethodRetries = "testingServerEchoMethodRetries";
       var testingEchoParameter = "testingEchoParameter";
 
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethodRetries, 
+        publicProcedureName : testingServerEchoMethodRetries,
         params : [testingEchoParameter],
         retries : 10,
         timeout : 1500,
@@ -93,46 +93,46 @@
           start(); },
         onError : function(statusObj) {
           ok(false, statusObj.description);
-          start();}});    
+          start();}});
     });
-    
+
     asyncTest("0 retries call", 1, function() {
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
         retries : 0,
-        publicProcedureName : testingServerEchoMethod, 
+        publicProcedureName : testingServerEchoMethod,
         params : [testingEchoParameter],
         onSuccess : function(result){
           equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj){
           ok(false, statusObj.description);
-          start();}});    
+          start();}});
     });
-    
+
     asyncTest("Unregistered procedure call", 1, function() {
       var testingServerUnregisteredMethod = "testingServerUnregisteredMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerUnregisteredMethod, 
+        publicProcedureName : testingServerUnregisteredMethod,
         params : [testingEchoParameter],
         onSuccess : function(result){
           ok(false);
           start(); },
         onError : function(statusObj){
           ok(true);
-          start();}});    
+          start();}});
     });
-    
+
     asyncTest("Non-pmrpc call", 1, function() {
       var testingServerUnregisteredMethod = "testingServerUnregisteredMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       function nonPmrpcTest(evt) {
         equal(evt.data, testingEchoParameter);
         if (window.removeEventListener) {
@@ -142,7 +142,7 @@
         }
         start();
       }
-      
+
       if (window.addEventListener) {
         window.addEventListener("message", nonPmrpcTest, false);
       } else {
@@ -154,10 +154,10 @@
     asyncTest("Destination domain supported", 1, function() {
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethod, 
+        publicProcedureName : testingServerEchoMethod,
         params : [testingEchoParameter],
         destinationDomain : "*",
         onSuccess : function(result){
@@ -165,16 +165,16 @@
           start(); },
         onError : function(statusObj){
           ok(false, statusObj.description);
-          start();}});    
-    });    
+          start();}});
+    });
 
     asyncTest("Destination domain unsupported through whitelist", 1, function() {
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethod, 
+        publicProcedureName : testingServerEchoMethod,
         params : [testingEchoParameter],
         destinationDomain : "http://www.fail.com",
         onSuccess : function(result){
@@ -182,101 +182,101 @@
           start(); },
         onError : function(statusObj){
           ok(true);
-          start();}});    
+          start();}});
     });
-    
+
     asyncTest("Source domain unsupported through blacklist", 1, function() {
       var testingServerEchoMethodUnsupportedBL = "testingServerEchoMethodUnsupportedBL";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethodUnsupportedBL, 
+        publicProcedureName : testingServerEchoMethodUnsupportedBL,
         params : [testingEchoParameter],
         onSuccess : function(result) {
           ok(false);
           start(); },
         onError : function(statusObj) {
           ok(true);
-          start();}});    
-    });      
-    
+          start();}});
+    });
+
     asyncTest("Source domain unsupported through whitelist", 1, function() {
       var testingServerEchoMethodUnsupportedWL = "testingServerEchoMethodUnsupportedWL";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethodUnsupportedWL, 
+        publicProcedureName : testingServerEchoMethodUnsupportedWL,
         params : [testingEchoParameter],
         onSuccess : function(result) {
           ok(false);
           start(); },
         onError : function(statusObj) {
           ok(true);
-          start();}});    
+          start();}});
     });
-    
+
     asyncTest("Asynchronous method", 1, function() {
       var testingServerEchoMethodAsynchronous = "testingServerEchoMethodAsynchronous";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethodAsynchronous, 
+        publicProcedureName : testingServerEchoMethodAsynchronous,
         params : [testingEchoParameter],
         onSuccess : function(result) {
           equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj) {
           ok(false, statusObj.description);
-          start();}});    
+          start();}});
     });
-    
+
     asyncTest("Named parameters", 1, function() {
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethod, 
+        publicProcedureName : testingServerEchoMethod,
         params : { echo : testingEchoParameter },
         onSuccess : function(result) {
           equal(result.returnValue, testingEchoParameter);
           start(); },
         onError : function(statusObj) {
           ok(false, statusObj.description);
-          start();}});    
+          start();}});
     });
-    
+
     asyncTest("Mispelled named parameters", 1, function() {
       var testingServerEchoMethod = "testingServerEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : testingCrossDocumentServer,
-        publicProcedureName : testingServerEchoMethod, 
+        publicProcedureName : testingServerEchoMethod,
         params : { ech : testingEchoParameter },
         onSuccess : function(result) {
           ok(false);
           start(); },
         onError : function(statusObj) {
           ok(true);
-          start();}});    
+          start();}});
     });
-    
+
     // TODO: need test for timeouts
-    
+
     module("Worker communication");
     test("Worker API implemented", 1, function() {
       var dedicatedWorkerImplemented = typeof nonPmrpcWorker !== "undefined";
       ok(dedicatedWorkerImplemented, "Worker API must be implemented.");
     });
-    
+
     asyncTest("Container-to-worker echo", 2, function() {
       var dedicatedWorkerEcho = "dedicatedWorkerEcho";
       var dedicatedTestingWorker = new Worker("testingDedicatedWorker.js");
-      
+
       setTimeout( function() {
         pmrpc.call({
           destination : dedicatedTestingWorker,
@@ -290,7 +290,7 @@
           }
         });
       }, 1000);
-        
+
       function containerWorkerTest(testerParam) {
         var dedicatedWorkerEcho = "dedicatedWorkerEcho";
         equal(testerParam, dedicatedWorkerEcho);
@@ -302,16 +302,16 @@
         procedure : containerWorkerTest
       });
     });
-    
+
     test("SharedWorker API implemented", 1, function() {
       var sharedWorkerImplemented = typeof nonPmrpcSharedWorker !== "undefined";
       ok(sharedWorkerImplemented, "SharedWorker API must be implemented.");
     });
-    
+
     asyncTest("Container-to-sharedWorker echo", 2, function() {
       var sharedWorkerEcho = "sharedWorkerEcho";
       var sharedTestingWorker = new SharedWorker("testingSharedWorker.js", "worker123");
-      
+
       setTimeout(function() {
         pmrpc.call({
           destination : sharedTestingWorker,
@@ -325,7 +325,7 @@
           }
         });
       }, 1000);
-        
+
       function containerSharedWorkerTest(testerParam) {
         var sharedWorkerEcho = "sharedWorkerEcho";
         equal(testerParam, sharedWorkerEcho);
@@ -337,50 +337,50 @@
         procedure : containerSharedWorkerTest
       });
     });
-    
+
     asyncTest("Nested workers implemented", 1, function() {
       var nestedParentTestingWorker = new Worker("nestedParentTestingWorker.js");
-      
+
       function nestedWorkersImplemented(testerParam) {
         ok(testerParam);
         start();
         pmrpc.unregister("nestedWorkersImplemented");
       }
-      
+
       pmrpc.register({
         publicProcedureName : "nestedWorkersImplemented",
         procedure : nestedWorkersImplemented
       });
     });
-    
+
     test("Nested workers echo", 1, function() {
       stop(5000);
       var nestedWorkerEcho = "nestedWorkerEcho";
       var nestedParentTestingWorker = new Worker("nestedParentTestingWorker.js");
-      
+
       function containerNestedWorkerTest(testerParam) {
         equal(testerParam, nestedWorkerEcho);
         start();
-        pmrpc.unregister("containerNestedWorkerTest"); 
+        pmrpc.unregister("containerNestedWorkerTest");
       }
-      
+
       pmrpc.register({
         publicProcedureName : "containerNestedWorkerTest",
         procedure : containerNestedWorkerTest
       });
     });
-    
+
     module("Pubsub");
-    
+
     asyncTest("Multiple destination windows", 3, function() {
       var testingServerMultipleEchoMethod = "testingServerMultipleEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       var count = 0;
-      
+
       pmrpc.call({
         destination : [window.frames["multipleTest1"], window.frames["multipleTest2"], window.frames["multipleTest3"]],
-        publicProcedureName : testingServerMultipleEchoMethod, 
+        publicProcedureName : testingServerMultipleEchoMethod,
         params : [testingEchoParameter],
         onSuccess : function(result){
           equal(result.returnValue, testingEchoParameter);
@@ -398,17 +398,17 @@
         }
       });
     });
-    
+
     asyncTest("Publish to everyone", 1, function() {
       var testingServerPublishEchoMethod = "testingServerPublishEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       var succCount = 0;
       var errCount = 0;
-      
+
       pmrpc.call({
         destination : "publish",
-        publicProcedureName : testingServerPublishEchoMethod, 
+        publicProcedureName : testingServerPublishEchoMethod,
         params : [testingEchoParameter],
         onSuccess : function(result){
           if (result.returnValue === testingEchoParameter) {
@@ -424,17 +424,17 @@
         onError : function(statusObj){
           errCount++;
         }
-      });   
+      });
     });
-    
+
     asyncTest("Send single message with multiple domains", 1, function() {
       var testingServerEchoMethod = "testingServerDomainEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       pmrpc.call({
         destination : [window.frames["domainTest1"]],
         destinationDomain : ["http://7777.urlecho.appspot.com", "http://8888.urlecho.appspot.com", "http://9999.urlecho.appspot.com"],
-        publicProcedureName : testingServerEchoMethod, 
+        publicProcedureName : testingServerEchoMethod,
         params : [testingEchoParameter],
         onSuccess : function(result){
           equal(testingEchoParameter+"1", result.returnValue, "OK");
@@ -446,18 +446,18 @@
         }
       });
     });
-    
+
     asyncTest("Send message to multiple windows with multiple domains", 1, function() {
       var testingServerEchoMethod = "testingServerDomainEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       var succCount = 0;
       var errCount = 0;
-      
+
       pmrpc.call({
         destination : [window.frames["domainTest1"], window.frames["domainTest2"], window.frames["domainTest3"]],
         destinationDomain : ["http://7777.urlecho.appspot.com", "http://9999.urlecho.appspot.com"],
-        publicProcedureName : testingServerEchoMethod, 
+        publicProcedureName : testingServerEchoMethod,
         params : [testingEchoParameter],
         onSuccess : function(result){
           if (result.returnValue === testingEchoParameter+"1" || result.returnValue === testingEchoParameter+"3") {
@@ -487,18 +487,18 @@
         }
       });
     });
-    
+
     asyncTest("Pubsub with multiple domains", 1, function() {
       var testingServerPublishEchoMethod = "testingServerDomainEchoMethod";
       var testingEchoParameter = "testingEchoParameter";
-      
+
       var succCount = 0;
       var errCount = 0;
-      
+
       pmrpc.call({
         destination : "publish",
         destinationDomain : ["http://7777.urlecho.appspot.com"],
-        publicProcedureName : testingServerPublishEchoMethod, 
+        publicProcedureName : testingServerPublishEchoMethod,
         params : [testingEchoParameter],
         onSuccess : function(result){
           if (result.returnValue === testingEchoParameter+"1") {
@@ -519,15 +519,15 @@
             start();
           }
         }
-      });   
+      });
     });
-    
+
     // pubsub to workers and from workers
-    
+
     module("Discovery");
-    
+
     asyncTest("Pull-based discovery - window contraints.", 1, function() {
-      
+
       //all
       pmrpc.discover({
         destination : [window.frames["multipleTest1"], window.frames["multipleTest2"], window.frames["multipleTest3"]],
@@ -537,7 +537,7 @@
         }
       });
     });
-    
+
     asyncTest("Pull-based discovery - origin contraints.", 1, function() {
       //origin
       pmrpc.discover({
@@ -549,7 +549,7 @@
         }
       });
     });
-    
+
     asyncTest("Pull-based discovery - name contraints.", 1, function() {
       //name - pubsub
       pmrpc.discover({
@@ -567,7 +567,7 @@
     _gaq.push(['_setDomainName', 'auto']);
     _gaq.push(['_setAllowLinker', true]);
     _gaq.push(['_trackPageview']);
-  
+
     (function() {
       var ga = document.createElement('script'); ga.type = 'text/javascript';
       ga.async = true;
@@ -576,7 +576,7 @@
       var s = document.getElementsByTagName('script')[0];
       s.parentNode.insertBefore(ga, s);
     })();
-  </script>    
+  </script>
 </body>
 </html>
 

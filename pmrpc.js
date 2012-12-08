@@ -460,7 +460,11 @@ pmrpc = self.pmrpc =  function() {
         "retries" : 0,
         "destinationDomain" : callObj.destinationDomain});
       callQueue[callId] = callObj;
-      self.setTimeout(function() { waitAndSendRequest(callId); }, callObj.timeout / callObj.retries);
+      self.setTimeout(function() {
+        if (callQueue[callId] && callQueue[callId].status === "pinging") {
+          waitAndSendRequest(callId);
+        }
+      }, callObj.timeout / callObj.retries);
     }
   }
 

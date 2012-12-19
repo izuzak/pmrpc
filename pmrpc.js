@@ -263,8 +263,19 @@ pmrpc = self.pmrpc =  function() {
                          createJSONRpcResponseObject(null, returnValue, id),
                          serviceCallEvent.origin);
                      };
+             // create a errorback which the service
+             // must call in order to send an error back
+             var eb = function (errorValue) {
+                 sendPmrpcMessage(
+                   serviceCallEvent.source,
+                   createJSONRpcResponseObject(
+                		   createJSONRpcErrorObject(
+                		     -1, "Application error.",errorValue.message),
+                		   null, id),
+                   serviceCallEvent.origin);
+               };
             invokeProcedure(
-              service.procedure, service.context, request.params, [cb, serviceCallEvent]);
+              service.procedure, service.context, request.params, [cb, eb, serviceCallEvent]);
             return null;
           } else {
             // if the service is not async, just call it and return the value
@@ -676,3 +687,8 @@ pmrpc = self.pmrpc =  function() {
     discover : discover
   };
 }();
+
+//AMD suppport
+if (typeof define == 'function' && define.amd) {
+	define(pmrpc);
+}

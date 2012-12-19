@@ -142,7 +142,7 @@ For this reason, pmrpc let's clients specify that a call should be **retried** a
 
 ### Asynchronous procedures
 
-When a call is routed to the server, pmrpc calls the target procedure, waits for it to execute and returns the result to the client. This execution flow works for synchronous procedures registered on the server and doesn't work for asynchronous procedures. If the registered procedure is asynchronous - it returns immediately, continues processing in the background and invokes a callback function when execution finishes. Pmrpc supports **asynchronous procedures** by automatically passing a callback function which asynchronous procedures should call with the return value.
+When a call is routed to the server, pmrpc calls the target procedure, waits for it to execute and returns the result to the client. This execution flow works for synchronous procedures registered on the server and doesn't work for asynchronous procedures. If the registered procedure is asynchronous - it returns immediately, continues processing in the background and invokes a callback function when execution finishes. Pmrpc supports **asynchronous procedures** by automatically passing onsuccess and onerror callback functions which asynchronous procedures should call with the return value.
 
 
 ### Access control
@@ -234,9 +234,12 @@ pmrpc.register( {
 
 {% highlight javascript %}
 var publicProcedureName = "HelloPMRPC";
-var procedure = function (alertText, pmrpcCallback) { 
+var procedure = function (alertText, successCallback, errorCallback) { 
   alert(alertText); 
-  pmrpcCallback("Hello!"); };
+  successCallback("Hello!"); };
+
+// the errorCallback should be called with an object that has a message property, which will be extracted and returned as the error message (e.g. { message : "boink! error!"})
+  
 var accessControlList = {
   whitelist : [".*"],
   blacklist : ["http://evil\\.com.*"]

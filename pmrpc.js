@@ -455,7 +455,8 @@ pmrpc = self.pmrpc =  function() {
     } else {
       // if we can ping some more - send a new ping request
       callObj.status = "pinging";
-      callObj.retries = callObj.retries - 1;
+      var retries = callObj.retries;
+      callObj.retries = retries - 1;
 
       call({
         "destination" : callObj.destination,
@@ -475,7 +476,7 @@ pmrpc = self.pmrpc =  function() {
         if (callQueue[callId] && callQueue[callId].status === "pinging") {
           waitAndSendRequest(callId);
         }
-      }, callObj.timeout / callObj.retries);
+      }, callObj.timeout / retries);
     }
   }
 

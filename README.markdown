@@ -1,6 +1,6 @@
 # Introduction
 
-**Pmrpc** is an HTML5 JavaScript library for **message passing**, **remote procedure call** and **publish-subscribe** cross-contex communication in the browser. The library provides a simple API for exposing and calling procedures between browser **windows**, **iframes** and **web workers**, even between different origins. Pmrpc also provides several advanced features: callbacks similar to AJAX calls, ACL-based access control, asynchronous procedure support and fault-tolerance via retries. In case this wasnt clear, pmrpc **is not** a library for browser-server communication, it is a library for communication within the browser.
+**Pmrpc** is an HTML5 JavaScript library for **message passing**, **remote procedure call** and **publish-subscribe** cross-contex communication in the browser. The library provides a simple API for exposing and calling procedures between browser **windows**, **iframes** and **web workers**, even between different origins. Pmrpc also provides several advanced features: callbacks similar to AJAX calls, ACL-based access control, asynchronous procedure support and fault-tolerance via retries. In case this wasn't clear, pmrpc **is not** a library for browser-server communication, it is a library for communication within the browser.
 
 The **implementation** of the library is based on the [HTML5 Cross-document messaging postMessage API](http://www.w3.org/html/wg/html5/#crossDocumentMessages), [Web Workers API](http://www.whatwg.org/specs/web-workers/current-work/), the [JSON-RPC protocol](http://groups.google.com/group/json-rpc/web/json-rpc-1-2-proposal) and the [JSON data format](http://www.json.org). Pmrpc uses the postMessage API as an underlying communication mechanism and extends it to a RPC model using the JSON-RPC, a transport-independent protocol that uses JSON for formatting messages.
 
@@ -8,7 +8,7 @@ The **implementation** of the library is based on the [HTML5 Cross-document mess
 
 The complete list of features and the full API reference is [here](http://izuzak.github.com/pmrpc/apidocs.html).
 
-We have also written serveral blog posts about Pmrpc and cross-context communication:
+We have also written several blog posts about Pmrpc and cross-context communication:
 
 * [Discovery and publish-subscribe support](http://ivanzuzak.info/2010/06/15/pmrpc-discovery-and-publish-subscribe-support-systematization-of-cross-context-browser-communication-systems.html)
 * [WebWorker support](http://ivanzuzak.info/2009/12/21/rpc-for-web-workers-and-distributed-computing-within-the-browser.html)
@@ -83,7 +83,7 @@ Pmrpc was developed by [Ivan Zuzak](http://ivanzuzak.info) and [Marko Ivankovic]
 
 * [edudip](http://www.edudip.com/) - Platform for live Online Courses
 
-* [Responsive Open Learning Environments - ROLE](http://www.role-project.eu/) - European 7th Framework Programme (thanks to Bodo von der Heiden). _"ROLE will create an individual world for learning with personalization intelligence on the user’s side. ROLE will reach this objective by enabling the user to easily construct and maintain her own personal learning environment (PLE) consisting of a mix of preferred learning tools, learning services, learning resources and other related technologies."_
+* [Responsive Open Learning Environments - ROLE](http://www.role-project.eu/) - European 7th Framework Programme (thanks to Bodo von der Heiden). _"ROLE will create an individual world for learning with personalization intelligence on the user's side. ROLE will reach this objective by enabling the user to easily construct and maintain her own personal learning environment (PLE) consisting of a mix of preferred learning tools, learning services, learning resources and other related technologies."_
 
 * [OpenLaszlo](http://www.openlaszlo.org/) - An open source platform for the development and delivery of rich Internet applications.
 

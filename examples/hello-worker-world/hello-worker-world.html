@@ -1,6 +1,6 @@
 <html>
   <head>
-    <script src='https://raw.github.com/izuzak/pmrpc/master/pmrpc.js' type='text/javascript'></script>  
+    <script src='http://izuzak.github.com/pmrpc/pmrpc.js' type='text/javascript'></script>
   </head>
   <body>
     <script type="text/javascript">
@@ -13,7 +13,7 @@
           onSuccess : function(retVal) { alert(retVal.returnValue); },
           publicProcedureName : "HelloPMRPC_1",
           params : ["Hello World (from parent window)!"] } ); }, 1000);
-          
+
       // expose a procedure
       pmrpc.register( {
         publicProcedureName : "HelloPMRPC_2",

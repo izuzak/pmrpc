@@ -3,13 +3,13 @@
 //see client.js for license and such
 
 importScripts("ammo.js");
-importScripts('https://raw.github.com/izuzak/pmrpc/master/pmrpc.js');
+importScripts('http://izuzak.github.com/pmrpc/pmrpc.js');
 
 var transform = new Ammo.btTransform();
 var mygravity = -10;
 var mytargetmass = 1;
 var myprojectilemass = 30;
-var myprojectiletype = "sphere"; //"box" //"cone"  
+var myprojectiletype = "sphere"; //"box" //"cone"
 var myprojectilespeed = 150;
 var NUM;
 var NUMRANGE = [];
@@ -53,7 +53,7 @@ pmrpc.register( {
 		origin.setZ(campos.z);
 		body.setLinearVelocity(new Ammo.btVector3(vector.x, vector.y, vector.z));
 		body.activate();
-	} 
+	}
 } );
 
 	pmrpc.register( {
@@ -100,13 +100,13 @@ pmrpc.register( {
 	function simulatePhysics(dt) {
 		dynamicsWorld.stepSimulation(dt, 1);
 		// Read bullet data into JS objects
-		for (var i = 0; i <= NUM; i++) {        
+		for (var i = 0; i <= NUM; i++) {
 			var position = [0, 0, 0];
 			var quaternion = [0, 0, 0, 0];
 			readBulletObject(i + 1, position, quaternion);
-			pmrpc.call( {            
+			pmrpc.call( {
 				publicProcedureName : "update",
-			params : [i,position,quaternion] } );		
+			params : [i,position,quaternion] } );
 		}
 	}
 
@@ -125,7 +125,7 @@ pmrpc.register( {
 				else if((myprojectiletype == "cone") &&(i==1)){
 					var boxShape = new Ammo.btConeShape(1,2);
 				}
-				else{        
+				else{
 					var boxShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
 				}
 				var startTransform = new Ammo.btTransform();
@@ -143,11 +143,11 @@ pmrpc.register( {
 			var body = new Ammo.btRigidBody(rbInfo);
 
 			dynamicsWorld.addRigidBody(body);
-			bodies.push(body);	      
+			bodies.push(body);
 			});  //finished initial setup
 			wall();
-			//done setting up	      
+			//done setting up
 			//start physics clock
-			setInterval('simulatePhysics('+delta*8+')',delta/4);	
+			setInterval('simulatePhysics('+delta*8+')',delta/4);
 		}
 	});

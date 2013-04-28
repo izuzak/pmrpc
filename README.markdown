@@ -35,7 +35,7 @@ First, a procedure is registered for remote calls in the iframe that contains th
 ```html
 <html>
   <head>
-    <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+    <script type="text/javascript" src="http://izuzak.github.com/pmrpc/pmrpc.js"></script>
   </head>
   <body>
     <script type="text/javascript">
@@ -54,7 +54,7 @@ Second, the procedure is called from the parent window by specifying the iframe 
 ```html
 <html>
   <head>
-    <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+    <script type="text/javascript" src="http://izuzak.github.com/pmrpc/pmrpc.js"></script>
   </head>
   <body>
     <iframe id="ifr" name="ifr" src="iframe.html" width="0" height="0" frameborder=0></iframe>

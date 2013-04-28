@@ -18,14 +18,14 @@ First, a procedure is registered for remote calls in the iframe that contains th
 {% highlight html %}
 <html>
   <head>
-    <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+    <script type="text/javascript" src="http://izuzak.github.com/pmrpc/pmrpc.js"></script>
   </head>
   <body>
     <script type="text/javascript">
       // expose a procedure
       pmrpc.register( {
         publicProcedureName : "HelloPMRPC",
-        procedure : function(printParam) { alert(printParam); } } 
+        procedure : function(printParam) { alert(printParam); } }
       );
     </script>
   </body>
@@ -37,7 +37,7 @@ Second, the procedure is called from the parent window by specifying the iframe 
 {% highlight html %}
 <html>
   <head>
-    <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+    <script type="text/javascript" src="http://izuzak.github.com/pmrpc/pmrpc.js"></script>
   </head>
   <body>
     <iframe id="ifr" name="ifr" src="iframe.html" width="0" height="0" frameborder=0></iframe>
@@ -46,7 +46,7 @@ Second, the procedure is called from the parent window by specifying the iframe 
       pmrpc.call( {
         destination : window.frames["ifr"],
         publicProcedureName : "HelloPMRPC",
-        params : ["Hello World!"] } ); 
+        params : ["Hello World!"] } );
     </script>
   </body>
 </html>
@@ -56,7 +56,7 @@ Simple **Web worker communication example** (window -> worker communication):
 
 
 {% highlight javascript %}
-importScripts('https://raw.github.com/izuzak/pmrpc/master/pmrpc.js');
+importScripts('http://izuzak.github.com/pmrpc/pmrpc.js');
 
 // expose a procedure
 pmrpc.register( {
@@ -68,7 +68,7 @@ pmrpc.register( {
 {% highlight html %}
 <html>
   <head>
-    <script src='https://raw.github.com/izuzak/pmrpc/master/pmrpc.js' type='text/javascript'></script>  
+    <script src='http://izuzak.github.com/pmrpc/pmrpc.js' type='text/javascript'></script>
   </head>
   <body>
     <script type="text/javascript">
@@ -93,7 +93,7 @@ Pmrpc also provides several advanced features, like AJAX-style callbacks and acc
 
 _This section provides a high-level overview of pmrpc features, the full API is described below._
 
-As in most communication systems, a pmrpc system consists of a _client_ and a _server_. The purpose of the server is to implement and publically expose one or more procedures. These procedures can then be remotely called by clients from different domains. 
+As in most communication systems, a pmrpc system consists of a _client_ and a _server_. The purpose of the server is to implement and publically expose one or more procedures. These procedures can then be remotely called by clients from different domains.
 
 In pmrpc, every browser window, any iframe within a window or any web worker (dedicated or shared) that loads the pmrpc library may be both a client and a server. A client can call procedures from more than one server, more than one client can call procedures from a single server, and an entity can be a client and a server at the same time.
 
@@ -108,13 +108,13 @@ The basic scenario of using pmrpc is as follows:
 * both the client and server load the pmrpc library
 * the server exposes a procedure by using the pmrpc **register** method. The registered procedure is exposed under a known public name.
 * the client calls the exposed procedure remotely by using the pmrpc **call** method. The procedure is called by identifying the server window object, the public name of the method, and a list of parameters.
-* the server removes the registered procedure by using the pmrpc **unregister** method. 
+* the server removes the registered procedure by using the pmrpc **unregister** method.
 
 
 ## Advanced features
 
-Pmrpc also supports four advanced and optional features: 
-  
+Pmrpc also supports four advanced and optional features:
+
 * **callbacks** for successful and unsuccessful calls,
 * **access control** on both the client and server side,
 * calling the same method on multiple servers (multicast) and a **publish-subscribe** communication model (broadcast)
@@ -135,7 +135,7 @@ Pmrpc supports two callback methods:
 
 ### Retries and timeouts
 
-Like with AJAX calls, sometimes the server will not be running at the exact time of the client request, or the server will have different configuration than the one expected by the client. For example, the client (e.g. window) will load faster than the server (e.g. worker) and will send the request before the server even registers any procedures. 
+Like with AJAX calls, sometimes the server will not be running at the exact time of the client request, or the server will have different configuration than the one expected by the client. For example, the client (e.g. window) will load faster than the server (e.g. worker) and will send the request before the server even registers any procedures.
 
 For this reason, pmrpc let's clients specify that a call should be **retried** a certain number of times before giving up, if the previous request didn't complete successfuly for any reason. Also, pmrpc enables clients to specify the **timeout period** between two retries of the same call. For example, the client could specify that a call should be retried up to 5 times, waiting 2000 milliseconds between calls.
 
@@ -156,7 +156,7 @@ On the **client side**, the client can specify from which domains must the serve
 
 ### Multicast and publish-subscribe
 
-Pmrpc also supports calling the same remote procedure on multiple servers as a single call. In order to make such a **multicast call**, the client lists all servers it wishes to call the procedure on. The execution of such call is the same as would be multiple calls to each server exposing the procedure. 
+Pmrpc also supports calling the same remote procedure on multiple servers as a single call. In order to make such a **multicast call**, the client lists all servers it wishes to call the procedure on. The execution of such call is the same as would be multiple calls to each server exposing the procedure.
 
 Sometimes the client will not know the number or identity of servers implementing the procedure that needs to be called. In those cases, a **publish-subscribe model** is more appropriate. In order to make a publish call, the client doesn't specify any servers but only the procedure, and pmrpc will try to invoke the procedure on all servers exposing that procedure (broadcast).
 
@@ -173,7 +173,7 @@ Pmrpc is available as a single-file JavaScript library. The library exposes the 
 
 ### Loading the library
 
-The pmrpc library must be loaded in every window, iframe and web worker that intends to use pmrpc. Furthermore, since pmrpc uses JSON as a data-interchange format, the JSON library must be loaded also. Most modern web browsers (Chrome, Firefox, ...) implement the JSON library natively, so loading it will usually not be necessary. 
+The pmrpc library must be loaded in every window, iframe and web worker that intends to use pmrpc. Furthermore, since pmrpc uses JSON as a data-interchange format, the JSON library must be loaded also. Most modern web browsers (Chrome, Firefox, ...) implement the JSON library natively, so loading it will usually not be necessary.
 
 Note: the JSON library available on http://www.json.org/json2.js contains an alert statement which forces you to download the library, remove the alert and serve the it from your server.
 
@@ -181,14 +181,14 @@ Note: the JSON library available on http://www.json.org/json2.js contains an ale
 
 {% highlight html %}
 <script src='http://www.json.org/json2.js' type='text/javascript'></script>
-<script src='https://raw.github.com/izuzak/pmrpc/master/pmrpc.js' type='text/javascript'></script>
+<script src='http://izuzak.github.com/pmrpc/pmrpc.js' type='text/javascript'></script>
 {% endhighlight %}
 
 #### Web workers
 
 {% highlight javascript %}
 importScripts('http://www.json.org/json2.js');
-importScripts('https://raw.github.com/izuzak/pmrpc/master/pmrpc.js');
+importScripts('http://izuzak.github.com/pmrpc/pmrpc.js');
 {% endhighlight %}
 
 ### Register method
@@ -199,20 +199,20 @@ The **register** method is used by servers to publically expose a procedure unde
 {% highlight javascript %}
 pmrpc.register( {
   "publicProcedureName" : publicProcedureName,
-  "procedure" : procedure, 
+  "procedure" : procedure,
   "acl" : accessControlList,
   "isAsynchronous" : isAsynchronous } );
 {% endhighlight %}
 
-* (mandatory) **publicProcedureName** is a string that determines the public name under which the procedure will be made available to remote windows and iframes. 
+* (mandatory) **publicProcedureName** is a string that determines the public name under which the procedure will be made available to remote windows and iframes.
 
 * (mandatory) **procedure** is a function object representing the procedure being registered. This can be a named or unnamed function or method.
-  
+
 * (optional and _this feature is available only for non-worker communication_) **acl** is an object containg two string arrays: the whitelist and the blacklist. This parameter is optional, and by default enables clients from any domain to call the procedure. Elements of the whitelist and blacklist are regular expression strings where the `.*` regex represents any sequence of characters.
-  
+
 * (optional) **isAsynchronous** is a boolean value which defines whether the procedure is asynchronous or synchronous. By default, a synchronous procedure is assumed.
 
-**Example 1:** synchronous procedure named "HelloPMRPC" accessible from windows and iframes loaded from any page on "http://www.myFriendlyDomain1.com" or exactly from the "http://www.myFriendlyDomain2.com" page. 
+**Example 1:** synchronous procedure named "HelloPMRPC" accessible from windows and iframes loaded from any page on "http://www.myFriendlyDomain1.com" or exactly from the "http://www.myFriendlyDomain2.com" page.
 
 {% highlight javascript %}
 var publicProcedureName = "HelloPMRPC";
@@ -225,7 +225,7 @@ var isAsynchronous = false;
 
 pmrpc.register( {
   "publicProcedureName" : publicProcedureName,
-  "procedure" : procedure, 
+  "procedure" : procedure,
   "acl" : accessControlList,
   "isAsynchronous" : isAsynchronous } );
 {% endhighlight %}
@@ -234,12 +234,12 @@ pmrpc.register( {
 
 {% highlight javascript %}
 var publicProcedureName = "HelloPMRPC";
-var procedure = function (alertText, successCallback, errorCallback) { 
-  alert(alertText); 
+var procedure = function (alertText, successCallback, errorCallback) {
+  alert(alertText);
   successCallback("Hello!"); };
 
 // the errorCallback should be called with an object that has a message property, which will be extracted and returned as the error message (e.g. { message : "boink! error!"})
-  
+
 var accessControlList = {
   whitelist : [".*"],
   blacklist : ["http://evil\\.com.*"]
@@ -248,7 +248,7 @@ var isAsynchronous = true;
 
 pmrpc.register( {
   "publicProcedureName" : publicProcedureName,
-  "procedure" : procedure, 
+  "procedure" : procedure,
   "acl" : accessControlList,
   "isAsynchronous" : isAsynchronous } );
 {% endhighlight %}
@@ -263,7 +263,7 @@ pmrpc.unregister(publicProcedureName);
 {% endhighlight %}
 
 * **publicProcedureName** is a string that determines the name under which a procedure is registered.
-  
+
 **Example 3:** unregister a procedure named "HelloPMRPC".
 
 {% highlight javascript %}
@@ -304,7 +304,7 @@ pmrpc.call(parameters);
     * (optional) **timeout** is the number of miliseconds pmrpc will wait for any kind of answer before givnig up or retrying. By default, the timeout is 1000ms.
     * (optional and _this feature is available only for non-worker communication_) **destinationDoman** is an either a string defining which domain the servers must be loaded from, an array of such strings or a string defining that the server may be loaded from any domain (`*`). By default, the server may be loaded from any domain.
 
- 
+
 **Example 4:** invoke procedure "HelloPMRPC" with single positional parameter "Hello world from pmrpc client!". The onSuccess and onError methods alert the response, and the call will be retried up to 15 times, waiting 1500 milliseconds between retries. Servers loaded from any domain may process the call.
 
 {% highlight javascript %}
@@ -347,7 +347,7 @@ pmrpc.discover(parameters);
     * (optional) **destination** is an array of server context objects (windows, iframes, web workers) on which discovery will be performed. By default, discovery is performed on all accessible contexts.
     * (optional) **originRegex** is a regular expression that defines the origins of servers from which discovered procedures will be returned. In other words, only procedures discovered from these servers will be returned in the result set.
     * (optional) **nameRegex** is a regular expression that defines the names of procedures which will be returned. In other words, only procedures with these names will be returned in the result set.
-    * (mandatory) **callback** is a function object which will be called when the discovery process finishes. The method is passed a an array of discovered procedures where each element of the array contains the following properties: 
+    * (mandatory) **callback** is a function object which will be called when the discovery process finishes. The method is passed a an array of discovered procedures where each element of the array contains the following properties:
         * **publicProcedureName** is the name of the discovered procedure
         * **destination** is the context object of the server which exposes the procedure
         * **procedureACL** is the access control list defined for this procedure on the server
@@ -376,7 +376,7 @@ See [here](https://github.com/izuzak/pmrpc/tree/master/examples).
 
 ## Implementation
 
-The implementation of the library is based on the [cross-document messaging](http://dev.w3.org/html5/spec/Overview.html#crossDocumentMessages) and [web workers](http://dev.w3.org/html5/workers/) APIs and the [JSON-RPC protocol](http://groups.google.com/group/json-rpc/). 
+The implementation of the library is based on the [cross-document messaging](http://dev.w3.org/html5/spec/Overview.html#crossDocumentMessages) and [web workers](http://dev.w3.org/html5/workers/) APIs and the [JSON-RPC protocol](http://groups.google.com/group/json-rpc/).
 
 The **cross-document messaging API** is a simple method for passing messages between browser window objects (windows and iframes) which may be loaded from different domains. When using the postMessage APIs, restrictions concerning the [same-origin policy](https://developer.mozilla.org/En/Same_origin_policy_for_JavaScript) do not apply, and programmers can call postMessage on any window. Nevertheles, the API is secure in a sense that it provides mechanisms both for the sender and the receiver to ensure that messages are delivered from trusted domains. **Web workers** are background scripts running in parallel to their main page. The scripts communicate with the main page with an identical API as in cross-document messaging.
 

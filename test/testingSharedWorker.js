@@ -1,5 +1,5 @@
 // console.log("testingWorker worker loaded");
-importScripts('https://raw.github.com/izuzak/pmrpc/master/pmrpc.js');
+importScripts('http://izuzak.github.com/pmrpc/pmrpc.js');
 eventSource = "";
 
 console = {};

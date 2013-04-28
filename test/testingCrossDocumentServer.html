@@ -1,39 +1,39 @@
 <html lang="en">
 <head>
-  <script type="text/javascript" src="https://raw.github.com/izuzak/pmrpc/master/pmrpc.js"></script>
+  <script type="text/javascript" src="http://izuzak.github.com/pmrpc/pmrpc.js"></script>
 </head>
 <body>
 <script type="text/javascript">
   pmrpc.register( {
-    publicProcedureName : "testingServerEchoMethod", 
+    publicProcedureName : "testingServerEchoMethod",
     procedure : function(echo) {return echo;} });
 
   pmrpc.register( {
-    publicProcedureName : "testingServerEchoMethodSupported", 
+    publicProcedureName : "testingServerEchoMethodSupported",
     procedure : function(echo) {return echo;},
     acl : {whitelist: ["http://.*","file://.*"], blacklist:[]} });
 
   pmrpc.register( {
-    publicProcedureName : "testingServerEchoMethodUnsupportedBL", 
+    publicProcedureName : "testingServerEchoMethodUnsupportedBL",
     procedure : function(echo) {return echo;},
     acl : {whitelist: ["http://.*", "file.*"], blacklist:["http://.*", "file.*"]} });
 
   pmrpc.register( {
-    publicProcedureName : "testingServerEchoMethodUnsupportedWL", 
+    publicProcedureName : "testingServerEchoMethodUnsupportedWL",
     procedure : function(echo) {return echo;},
     acl : {whitelist: ["http://www\\.fail\\.com.*"], blacklist:[]} });
-    
+
   pmrpc.register( {
-    publicProcedureName : "testingServerEchoMethodAsynchronous", 
+    publicProcedureName : "testingServerEchoMethodAsynchronous",
     isAsynchronous : true,
     procedure : function(echo, cb, eb) {
       cb(echo); } } );
-          
-  window.setTimeout( function() {         
+
+  window.setTimeout( function() {
     pmrpc.register( {
-    publicProcedureName : "testingServerEchoMethodRetries", 
+    publicProcedureName : "testingServerEchoMethodRetries",
     procedure : function(echo) {return echo;} }); }, 2000 );
-    
+
 </script>
 </body>
 </html>

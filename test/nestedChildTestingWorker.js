@@ -1,4 +1,4 @@
-importScripts('https://raw.github.com/izuzak/pmrpc/master/pmrpc.js');
+importScripts('http://izuzak.github.com/pmrpc/pmrpc.js');
 
 function pmrpcNestedChildWorkerTester(testerParam) {
   return testerParam;

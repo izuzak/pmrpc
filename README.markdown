@@ -81,7 +81,9 @@ Pmrpc was developed by [Ivan Zuzak](http://ivanzuzak.info) and [Marko Ivankovic]
 
 # Projects using pmrpc
 
-* [edudip](http://www.edudip.com/) - Platform for live Online Courses
+* [Taverna](http://www.taverna.org.uk) - Workflow construction and execution environment used in many domains, but particularly life sciences.
+
+* [edudip](http://www.edudip.com/) - Platform for live Online Courses.
 
 * [Responsive Open Learning Environments - ROLE](http://www.role-project.eu/) - European 7th Framework Programme (thanks to Bodo von der Heiden). _"ROLE will create an individual world for learning with personalization intelligence on the user's side. ROLE will reach this objective by enabling the user to easily construct and maintain her own personal learning environment (PLE) consisting of a mix of preferred learning tools, learning services, learning resources and other related technologies."_
 

@@ -77,7 +77,7 @@ Visit the [pmrpc testing page](http://izuzak.github.com/pmrpc/test/testingContai
 
 # License
 
-Pmrpc was developed by [Ivan Zuzak](http://ivanzuzak.info) and [Marko Ivankovic](http://www.twitter.com/ivankovic_42) and is available under the [Apache v2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
+Pmrpc was developed by [Ivan Zuzak](http://ivanzuzak.info) and [Marko Ivankovic](http://www.ivankovic.me/) and is available under the [Apache v2.0 license](http://www.apache.org/licenses/LICENSE-2.0).
 
 # Projects using pmrpc
 

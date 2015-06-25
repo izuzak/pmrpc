@@ -206,7 +206,7 @@ pmrpc = self.pmrpc =  function() {
     var isWorkerComm = typeof eventSource !== "undefined" && eventSource !== null;
 
     // if the message is not for pmrpc, ignore it.
-    if (serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
+    if (typeof serviceCallEvent.data !== "string" || serviceCallEvent.data.indexOf("pmrpc.") !== 0) {
       return;
     } else {
       var message = decode(serviceCallEvent.data);

@@ -321,7 +321,7 @@ pmrpc = self.pmrpc =  function() {
         createJSONRpcErrorObject(
           -32601,
           "Method not found.",
-          "The requestd remote procedure does not exist or is not available."),
+          "The requested remote procedure does not exist or is not available."),
         null,
         id);
     }
